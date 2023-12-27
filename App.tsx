@@ -1,6 +1,8 @@
 import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
 import { NativeBaseProvider, Spinner, StatusBar } from "native-base";
 import { Routes } from '@routes/index';
+import { ClerkProvider } from "@clerk/clerk-expo";
+import Constants from "expo-constants"
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -15,9 +17,11 @@ export default function App() {
         backgroundColor='transparent'
         translucent
       />
-      {
-        fontsLoaded ? <Routes /> : <Spinner />
-      }
+       <ClerkProvider publishableKey={Constants?.expoConfig?.extra?.clerkPublishableKey}>
+        {
+          fontsLoaded ? <Routes /> : <Spinner />
+        }
+       </ClerkProvider>
     </NativeBaseProvider>
   );
 }
