@@ -15,12 +15,12 @@ const DAYS = [
 ]
 
 const EXERCISES = [
-  { id: '1', title: 'Beber Água', description: 'Preparando a máquina', checked: true },
-  { id: '2', title: 'Boot', description: 'Hoje é dia de TTT', checked: true },
-  { id: '4', title: 'Ler a Palavra', description: 'Provérbios 1', checked: true },
-  { id: '3', title: 'Exercício Físico', description: 'sdjkbashjbjhdsabjh asdnjdas kjn', checked: false },
-  { id: '5', title: 'Ler 10 páginas', description: 'Pai Rico, Pai Pobre', checked: true },
-  { id: '6', title: 'Trasbordar', description: 'Passe adiante o que aprendeu hoje', checked: false },
+  { id: '1', title: 'Bebi 2-4L de água', description: 'Mantenha a máquina lubrificada', checked: true },
+  { id: '2', title: 'Fiz o Boot', description: 'Hoje é dia de TTT', checked: true },
+  { id: '4', title: 'Li a Palavra', description: 'Provérbios 1', checked: true },
+  { id: '3', title: 'Fiz exercício físico', description: 'Seu corpo precisa obedecer', checked: false },
+  { id: '5', title: 'Ler livro da semana', description: 'Pai Rico, Pai Pobre', checked: true },
+  { id: '6', title: 'Trasbordei', description: 'Ensinar é aprendizado exponencial', checked: false },
 ]
 
 export function Home () {
