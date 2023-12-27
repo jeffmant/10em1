@@ -1,4 +1,4 @@
-{
+module.exports = {
   "expo": {
     "name": "10em1",
     "slug": "10em1",
@@ -25,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    extra: {
+      clerkPublishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+    },
   }
 }
