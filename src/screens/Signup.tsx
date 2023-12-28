@@ -45,8 +45,6 @@ export function Signup () {
       return;
     }
 
-    console.log(data)
-
     try {
       await signUp.create({
         firstName: data.name.split(' ')[0],

@@ -3,6 +3,8 @@ import { NativeBaseProvider, Spinner, StatusBar } from "native-base";
 import { Routes } from '@routes/index';
 import { ClerkProvider } from "@clerk/clerk-expo";
 import Constants from "expo-constants"
+import { tokenCache } from '@storage/auth.storage';
+import { TokenCache } from '@clerk/clerk-expo/dist/cache';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -17,7 +19,10 @@ export default function App() {
         backgroundColor='transparent'
         translucent
       />
-       <ClerkProvider publishableKey={Constants?.expoConfig?.extra?.clerkPublishableKey}>
+      <ClerkProvider 
+        publishableKey={Constants?.expoConfig?.extra?.clerkPublishableKey}
+        tokenCache={tokenCache as TokenCache}
+      >
         {
           fontsLoaded ? <Routes /> : <Spinner />
         }
