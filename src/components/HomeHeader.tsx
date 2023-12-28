@@ -1,7 +1,7 @@
 import { HStack, Heading, Text, VStack, Icon } from "native-base";
 import { MaterialIcons } from '@expo/vector-icons'
 import { UserPhoto } from "./UserPhoto";
-import { TouchableHighlight, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import userPhotoDefault from '@assets/userPhotoDefault.png'
 import { useClerk, useUser } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
@@ -14,8 +14,8 @@ export function HomeHeader () {
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
 
   return (
-    <HStack bg="gray.100" pt={16} pb={5} px={8} alignItems="center">
-      <TouchableHighlight onPress={() => navigate('profile')} >
+    <HStack bg="gray.100" pt={12} pb={5} px={8} alignItems="center">
+      <TouchableOpacity onPress={() => navigate('profile')} >
         <UserPhoto 
           source={
             { uri: user?.imageUrl} || userPhotoDefault
@@ -24,7 +24,7 @@ export function HomeHeader () {
           size={16}
           mr={4}
         />
-      </TouchableHighlight>
+      </TouchableOpacity>
       
       <VStack flex={1}>
         <Text color="gray.700" fontSize="md">

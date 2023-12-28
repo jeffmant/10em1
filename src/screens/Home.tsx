@@ -32,7 +32,6 @@ export function Home () {
       <HomeHeader />
 
       <FlatList
-      roundedTop="xl"
         data={days}
         keyExtractor={item => item.numberDay}
         renderItem={({ item }) => (
@@ -45,9 +44,8 @@ export function Home () {
         )}
         horizontal
         showsHorizontalScrollIndicator={false}
-        _contentContainerStyle={{ px: 8 }}
-        mt={8}
-        mb={1}
+        _contentContainerStyle={{ px: 2 }}
+        mt={4}
         maxH={24}
         minH={10}
       />

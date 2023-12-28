@@ -10,8 +10,8 @@ export function Daily ({ numberDay, weekDay, isActive, ...rest }: DailyProps) {
   return (
     <Pressable
       mr={3}
-      w={16}
-      h={20}
+      w={12}
+      h={16}
       bg="gray.100"
       rounded="xl"
       justifyContent="center"
