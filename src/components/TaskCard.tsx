@@ -1,13 +1,14 @@
-import { HStack, Heading, Icon, IconButton, Image, Text, VStack } from "native-base";
+import { HStack, Heading, Icon, IconButton, Text, VStack } from "native-base";
 import { TouchableHighlight, TouchableHighlightProps } from "react-native";
 import { Entypo } from '@expo/vector-icons'
 import { MaterialIcons } from '@expo/vector-icons'
 
 type TaskCardProps = TouchableHighlightProps & {
   data: any
+  handleTask: (taskId: string) => void
 }
 
-export function TaskCard ({ data, ...rest }: TaskCardProps) {
+export function TaskCard ({ data, handleTask, ...rest }: TaskCardProps) {
   return (
     <TouchableHighlight
       {...rest}
@@ -20,6 +21,7 @@ export function TaskCard ({ data, ...rest }: TaskCardProps) {
             color="gray.700"
             fontSize="lg"
             fontFamily="heading"
+            strikeThrough={data.checked}
           >
             {data.title}
           </Heading>
@@ -28,7 +30,7 @@ export function TaskCard ({ data, ...rest }: TaskCardProps) {
           </Text>
         </VStack>
 
-        <IconButton onPress={() => console.log('pressed')}>
+        <IconButton onPress={() => handleTask(data.id)} _pressed={{ backgroundColor: 'gray.100' }}>
           <Icon as={Entypo} name={ data.checked ? 'check' : 'circle' } size="lg" color={ data.checked ? 'green.500' : "gray.500" } />
         </IconButton>
       </HStack>

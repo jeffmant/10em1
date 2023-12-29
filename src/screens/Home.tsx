@@ -1,18 +1,15 @@
-import { FlatList, HStack, Heading, Text, VStack } from "native-base";
+import { FlatList, VStack } from "native-base";
 import { HomeHeader } from "../components/HomeHeader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Daily } from "@components/Daily";
 import { TaskCard } from "@components/TaskCard";
+import { startOfWeek, endOfWeek, getDate, format } from 'date-fns';
+import { ptBR } from "date-fns/locale";
 
-const DAYS = [
-  { numberDay: '1', weekDay: 'dom' },
-  { numberDay: '2', weekDay: 'seg' },
-  { numberDay: '3', weekDay: 'ter' },
-  { numberDay: '4', weekDay: 'qua' },
-  { numberDay: '5', weekDay: 'qui' },
-  { numberDay: '6', weekDay: 'sex' },
-  { numberDay: '7', weekDay: 'sab' },
-]
+type Day = {
+  numberDay: string
+  weekDay: string 
+}
 
 const EXERCISES = [
   { id: '1', title: 'Bebi 2-4L de água', description: 'Mantenha a máquina lubrificada', checked: true },
@@ -24,8 +21,48 @@ const EXERCISES = [
 ]
 
 export function Home () {
-  const [days, setDays] = useState(DAYS)
+  const [days, setDays] = useState<Day[]>([])
   const [selectedDay, setSelectedDay] = useState('')
+  const [exercises, setExercises] = useState(EXERCISES)
+
+  function handleWeekDays () {
+    const date = new Date()
+    const startOfWeekDate = startOfWeek(date, { locale: ptBR })
+    const endOfWeekDate = endOfWeek(date, { locale: ptBR })
+    
+    let formatedDays = []
+
+    for (let index = getDate(startOfWeekDate); index <= getDate(endOfWeekDate); index++) {
+      const currentDate = new Date(`${date.getFullYear()}-${date.getMonth() + 1}-${index}`)
+
+      formatedDays.push({
+        numberDay: index.toString(),
+        weekDay: format(currentDate, 'iiii', {
+          locale: ptBR,
+        }).slice(0,3).toUpperCase()
+      })
+    }
+  
+    setDays(formatedDays)
+    setSelectedDay(getDate(new Date()).toString())
+  }
+  
+  useEffect(() => {
+    handleWeekDays()
+  }, [])
+
+  function handleTask (taskId: string) {
+    const foundTask = exercises.find(exercise => exercise.id === taskId)
+
+    if (foundTask) {
+      foundTask.checked = !foundTask.checked
+
+      setExercises((prev) => ([
+        ...prev,
+        foundTask
+      ]))
+    }
+  }
 
   return (
     <VStack flex={1}>
@@ -55,13 +92,12 @@ export function Home () {
           data={EXERCISES}
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
-            <TaskCard data={item} />
+            <TaskCard data={item} handleTask={handleTask} />
           )}
           showsVerticalScrollIndicator={false}
           _contentContainerStyle={{ paddingBottom: 8 }}
         />
       </VStack>
-
     </VStack>
   )
 }
