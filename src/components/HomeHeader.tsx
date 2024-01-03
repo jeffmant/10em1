@@ -14,7 +14,7 @@ export function HomeHeader () {
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
 
   return (
-    <HStack bg="gray.100" pt={12} pb={5} px={8} alignItems="center">
+    <HStack bg="gray.100" pt={16} pb={5} px={8} alignItems="center">
       <TouchableOpacity onPress={() => navigate('profile')} >
         <UserPhoto 
           source={

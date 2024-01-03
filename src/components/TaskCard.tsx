@@ -1,7 +1,7 @@
 import { HStack, Heading, Icon, IconButton, Text, VStack } from "native-base";
 import { TouchableHighlight, TouchableHighlightProps } from "react-native";
 import { Entypo } from '@expo/vector-icons'
-import { MaterialIcons } from '@expo/vector-icons'
+import { MaterialIcons,  } from '@expo/vector-icons'
 
 type TaskCardProps = TouchableHighlightProps & {
   data: any
@@ -14,7 +14,7 @@ export function TaskCard ({ data, handleTask, ...rest }: TaskCardProps) {
       {...rest}
     >
       <HStack bg="gray.100" alignItems="center" p={4} pr={4} rounded="xl" mb={3} h={20}>
-        <Icon as={MaterialIcons} name="directions-run" size="2xl" color="blue.500" mr={2} />
+        <Icon as={MaterialIcons} name={data.icon} size="xl" color={ data.checked ? 'blue.400' : 'gray.300' } mr={4} />
 
         <VStack flex={1}>
           <Heading
