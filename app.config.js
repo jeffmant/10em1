@@ -3,6 +3,7 @@ module.exports = {
     "name": "10em1",
     "slug": "10em1",
     "version": "1.0.0",
+    "scheme": "myapp",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
