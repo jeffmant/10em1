@@ -1,4 +1,4 @@
-import { Center, Heading, Image, ScrollView, Text, VStack, useToast } from "native-base";
+import { Box, Center, Heading, Image, Link, ScrollView, Text, VStack, useToast } from "native-base";
 import LogoImage from '@assets/logo.png'
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
@@ -7,8 +7,10 @@ import { AuthRoutesNavigatiorProps } from "@routes/auth.routes";
 import { Controller, FieldError, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useState } from "react";
-import { isClerkAPIResponseError, useSignUp } from "@clerk/clerk-expo";
+import { useCallback, useState } from "react";
+import { isClerkAPIResponseError, useOAuth, useSignUp } from "@clerk/clerk-expo";
+import { signUserToChallenge } from "@remote/challenge.supabase";
+import { FontAwesome } from '@expo/vector-icons'
 
 type SignupDTO = {
   name: string
@@ -26,6 +28,7 @@ const signupValidationSchema = Yup.object({
 
 export function Signup () {
   const [isLoading, setIsLoading] = useState(false)
+  const [showEmailSignup, setShowEmailSignup] = useState(false)
   const [pendingVerification, setPendingVerification] = useState(false)
   const [code, setCode] = useState('')
   
@@ -36,8 +39,22 @@ export function Signup () {
   })
 
   const { signUp, isLoaded, setActive } = useSignUp()
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const toast = useToast()
+
+  async function handleGoogleSignup(){
+    try {
+      const { createdSessionId } = await startOAuthFlow();
+  
+      if (createdSessionId && setActive) {
+        setActive({ session: createdSessionId });
+      }
+    } catch (err) {
+      console.error("OAuth error", err);
+    }
+
+  }
 
   async function handleSignup (data: SignupDTO) {
     setIsLoading(true)
@@ -120,130 +137,168 @@ export function Signup () {
       }}
       showsVerticalScrollIndicator={false}
     >
-      <VStack flex={1} bg='gray.700' px={10} backgroundColor="#2a4858">
+      <VStack flex={1} bg='gray.700' px={10} backgroundColor="#2a4858" justifyContent={showEmailSignup ? 'center' : 'space-around'}>
         <Center mt={8}>
           <Image 
             source={LogoImage}
             size={40}
             resizeMode="contain" 
+            alt="App Logo"
           />
         </Center>
 
-        <Center>
-          {
-            !pendingVerification ? (
-              <>
+        {
+          showEmailSignup && (
+            <Center>
+              {
+                !pendingVerification ? (
+                  <>
+                    <Heading 
+                      color="gray.100"
+                      fontSize="xl"
+                      mb={4}
+                      fontFamily="heading"
+                      >
+                      Crie sua conta
+                    </Heading>
+
+                    <Controller
+                      name="name"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <Input
+                          placeholder="Nome"
+                          autoCapitalize="words"
+                          value={value}
+                          onChangeText={onChange}
+                          errorMessage={errors?.name?.message}
+                        />
+                      )}
+                    />
+          
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <Input
+                          placeholder="Email"
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          value={value}
+                          onChangeText={onChange}
+                          errorMessage={errors?.email?.message}
+                        />
+                      )}
+                    />
+          
+                    <Controller
+                      name="password"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <Input
+                          placeholder="Senha"
+                          secureTextEntry
+                          value={value}
+                          onChangeText={onChange}
+                          errorMessage={errors?.password?.message}
+                        />
+                      )}
+                    />
+          
+                    <Controller
+                      name="confirmPassword"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <Input
+                          placeholder="Confirmar senha"
+                          secureTextEntry
+                          value={value}
+                          onChangeText={onChange}
+                          errorMessage={errors?.confirmPassword?.message}
+                        />
+                      )}
+                    />
+          
+                    <Button 
+                      title="Criar conta"
+                      onPress={handleSubmit(handleSignup)}
+                      disabled={!isValid || isLoading}
+                      isLoading={isLoading}
+                    />
+
+                    <Link onPress={() => setShowEmailSignup(false)}>
+                      <Text
+                        color="blue.500"
+                        fontSize="md"
+                        mt={4}
+                        fontFamily="body"
+                      >
+                        Voltar opções
+                      </Text>
+                    </Link>
+                  </>
+                ) : (
+                  <Box>
+                    <Text
+                      color="gray.100"
+                      fontFamily="body"
+                      mb={4}
+                      fontSize="md"
+                    >
+                      Enviamos um código no seu email. {"\n"}
+                      Por gentileza, insira-o aqui:
+                    </Text>
+
+                    <Input 
+                      placeholder="Código"
+                      keyboardType="numeric"
+                      value={code}
+                      onChangeText={setCode}
+                    />
+
+                    <Button
+                      title="Confirmar"
+                      onPress={onPressVerify}
+                      isLoading={isLoading}
+                    />
+                  </Box>
+                )
+              }
+            </Center>
+          )
+        }
+
+        {
+          !showEmailSignup && (
+              <Center>
                 <Heading 
                   color="gray.100"
-                  fontSize="xl"
+                  fontSize="md"
                   mb={4}
                   fontFamily="heading"
                   >
-                  Crie sua conta
+                  Escolha uma opção:
                 </Heading>
-      
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      placeholder="Nome"
-                      autoCapitalize="words"
-                      value={value}
-                      onChangeText={onChange}
-                      errorMessage={errors?.name?.message}
-                    />
-                  )}
-                />
-      
-                <Controller
-                  name="email"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      placeholder="Email"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      value={value}
-                      onChangeText={onChange}
-                      errorMessage={errors?.email?.message}
-                    />
-                  )}
-                />
-      
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      placeholder="Senha"
-                      secureTextEntry
-                      value={value}
-                      onChangeText={onChange}
-                      errorMessage={errors?.password?.message}
-                    />
-                  )}
-                />
-      
-                <Controller
-                  name="confirmPassword"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      placeholder="Confirmar senha"
-                      secureTextEntry
-                      value={value}
-                      onChangeText={onChange}
-                      errorMessage={errors?.confirmPassword?.message}
-                    />
-                  )}
-                />
-      
+
                 <Button 
-                  title="Criar conta"
-                  onPress={handleSubmit(handleSignup)}
-                  disabled={!isValid || isLoading}
-                  isLoading={isLoading}
-                />
-              </>
-            ) : (
-              <>
-                <Text
-                  color="gray.100"
-                  fontFamily="body"
-                  mb={4}
-                  fontSize="md"
-                >
-                  Enviamos um código no seu email. {"\n"}
-                  Por gentileza, insira-o aqui:
-                </Text>
-
-                <Input 
-                  placeholder="Código"
-                  keyboardType="numeric"
-                  value={code}
-                  onChangeText={setCode}
+                  title="Cadastrar com Google"
+                  startIcon={<FontAwesome name="google" color="white" size={20} />}
+                  onPress={handleGoogleSignup}
                 />
 
-                <Button
-                  title="Confirmar"
-                  onPress={onPressVerify}
-                  isLoading={isLoading}
+                <Button 
+                  mt={4}
+                  title="Cadastrar com Email"
+                  startIcon={<FontAwesome name="envelope" color="gray" size={20} />}
+                  onPress={() => setShowEmailSignup(true)}
+                  bg="gray.100"
+                  color="gray.700"
                 />
-              </>
-            )
-          }
-        </Center>
+              </Center>
+          )
+        }
 
-        <Center mt={8}>
-          <Text
-            color="gray.100"
-            fontSize="sm"
-            mb={3}
-            fontFamily="body"
-          >
-            Já tem conta?
-          </Text>
+        <Center my={8}>
           <Button 
             title="Voltar para login"
             variant="outline"
