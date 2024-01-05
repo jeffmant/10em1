@@ -3,7 +3,7 @@ import { HomeHeader } from "../components/HomeHeader";
 import { useEffect, useState } from "react";
 import { Daily } from "@components/Daily";
 import { TaskCard } from "@components/TaskCard";
-import { startOfWeek, endOfWeek, getDate, format, startOfWeekYear } from 'date-fns';
+import { startOfWeek, endOfWeek, getDate, format } from 'date-fns';
 import { ptBR } from "date-fns/locale";
 
 type Day = {
@@ -12,12 +12,12 @@ type Day = {
 }
 
 const EXERCISES = [
-  { id: '1', title: 'Bebi 2-4L de água', description: 'Mantenha a máquina lubrificada', icon: 'local-drink', checked: true },
-  { id: '2', title: 'Fiz o Boot', description: 'Hoje é dia de TTT', icon: 'emoji-people', checked: true },
-  { id: '4', title: 'Li a Palavra', description: 'Provérbios 1', icon: 'menu-book', checked: false },
-  { id: '3', title: 'Fiz exercício físico', description: 'Seu corpo precisa obedecer', icon: 'directions-run', checked: false },
-  { id: '5', title: 'Ler livro da semana', description: 'Pai Rico, Pai Pobre', icon: 'auto-stories', checked: true },
-  { id: '6', title: 'Trasbordei', description: 'Ensinar é aprendizado exponencial', icon: 'group', checked: false },
+  { id: '1', title: 'Fiz o Boot', description: 'Hoje é dia de TTT', icon: '🧍‍♂️', checked: true },
+  { id: '2', title: 'Li a Palavra', description: 'Manual do Usuário', icon: '📖', checked: false },
+  { id: '3', title: 'Fiz exercício físico', description: 'Seu corpo precisa obedecer', icon: '🏋️‍♂️', checked: false },
+  { id: '4', title: 'Tomei banho natural', description: 'É só hoje!', icon: '🚿', checked: true },
+  { id: '5', title: 'Li o livro da semana', description: 'Pronto para a modelagem?', icon: '📚', checked: true },
+  { id: '6', title: 'Trasbordei', description: 'Ensinar é aprendizado exponencial', icon: '📢', checked: false },
 ]
 
 export function Home () {
@@ -27,18 +27,19 @@ export function Home () {
 
   function handleWeekDays () {
     const date = new Date()
-    const startOfWeekDate = startOfWeek(date, { locale: ptBR })
-    const endOfWeekDate = endOfWeek(date, { locale: ptBR })
+    const startOfWeekDate = startOfWeek(date, { weekStartsOn: 1, locale: ptBR })
+    const endOfWeekDate = endOfWeek(date, { weekStartsOn: 1, locale: ptBR })
     
     let formatedDays = []
 
     for (let index = getDate(startOfWeekDate); index <= getDate(endOfWeekDate); index++) {
-      const currentDate = new Date(`${date.getFullYear()}-${date.getMonth() + 1}-${index}`)
+      const currentDate = new Date(date.getFullYear(), date.getMonth(), index)
 
       formatedDays.push({
         numberDay: index.toString(),
         weekDay: format(currentDate, 'iiii', {
           locale: ptBR,
+          weekStartsOn: 1
         }).slice(0,3).toUpperCase()
       })
     }
