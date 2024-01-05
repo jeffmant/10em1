@@ -14,7 +14,7 @@ export function TaskCard ({ data, handleTask, ...rest }: TaskCardProps) {
       {...rest}
     >
       <HStack bg="gray.100" alignItems="center" p={4} pr={4} rounded="xl" mb={3} h={20}>
-        <Icon as={MaterialIcons} name={data.icon} size="xl" color={ data.checked ? 'blue.400' : 'gray.300' } mr={4} />
+        <Text fontSize={28} mr={4}>{data.icon}</Text>
 
         <VStack flex={1}>
           <Heading
