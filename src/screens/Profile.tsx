@@ -2,7 +2,7 @@ import { Button } from "@components/Button";
 import { Header } from "@components/Header";
 import { Input } from "@components/Input";
 import { UserPhoto } from "@components/UserPhoto";
-import { Center, Heading, ScrollView, Skeleton, Text, VStack, useToast } from "native-base";
+import { Center, ScrollView, Skeleton, Text, VStack, useToast } from "native-base";
 import { useState } from "react";
 
 import { TouchableOpacity } from "react-native";
@@ -14,7 +14,7 @@ import * as Yup from 'yup'
 import userPhotoDefault from '@assets/userPhotoDefault.png'
 import { Controller, FieldError, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { isClerkAPIResponseError, useUser } from "@clerk/clerk-expo";
+import { isClerkAPIResponseError, useClerk, useUser } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
 
 type ProfileDTO = {
@@ -53,6 +53,7 @@ const PHOTO_SIZE = 32
 
 export function Profile () {
   const { user } = useUser()
+  const { signOut } = useClerk()
   const { goBack } = useNavigation()
 
   const [photoIsLoading, setPhotoIsLoading] = useState(false)
@@ -248,7 +249,20 @@ export function Profile () {
             onPress={handleSubmit(handleProfileUpdate)}
             isLoading={isLoading}
           />
+
+          <TouchableOpacity onPress={() => signOut()}>
+            <Text
+              mt={16} 
+              fontFamily="heading" 
+              fontSize="md" 
+              color="blue.600" 
+              fontWeight="bold"
+            >
+              Sair
+            </Text>
+          </TouchableOpacity>
         </Center>
+        
       </ScrollView>
     </VStack>
   )

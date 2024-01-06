@@ -1,15 +1,14 @@
-import { HStack, Heading, Text, VStack, Icon } from "native-base";
+import { HStack, Heading, VStack, Icon } from "native-base";
 import { MaterialIcons } from '@expo/vector-icons'
 import { UserPhoto } from "./UserPhoto";
 import { TouchableOpacity } from "react-native";
 import userPhotoDefault from '@assets/userPhotoDefault.png'
-import { useClerk, useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
 import { AppRoutesNavigatiorProps } from "@routes/app.routes";
 
 
 export function HomeHeader () {
-  const { signOut } = useClerk()
   const { user } = useUser()
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
 
@@ -21,27 +20,33 @@ export function HomeHeader () {
             { uri: user?.imageUrl} || userPhotoDefault
           }
           alt="Imagem do usuário"
-          size={16}
-          mr={4}
+          size={12}
+          mr={2}
         />
       </TouchableOpacity>
       
       <VStack flex={1}>
-        <Text color="gray.700" fontSize="md">
-          Olá,
-        </Text>
-
         <Heading color="gray.700" fontSize="md" fontFamily="heading">
           Jefferson
         </Heading>
       </VStack>
-
-      <TouchableOpacity onPress={() => signOut()}>
+     
+      <TouchableOpacity>
         <Icon 
           as={MaterialIcons} 
-          name="logout"
-          color="gray.700"
+          name="notifications"
+          color="gray.500"
           size={7}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Icon 
+          as={MaterialIcons} 
+          name="settings"
+          color="gray.500"
+          size={7}
+          ml={4}
         />
       </TouchableOpacity>
     </HStack>
