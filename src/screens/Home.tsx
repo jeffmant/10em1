@@ -3,7 +3,7 @@ import { HomeHeader } from "../components/HomeHeader";
 import { useEffect, useState } from "react";
 import { Daily } from "@components/Daily";
 import { TaskCard } from "@components/TaskCard";
-import { startOfWeek, endOfWeek, getDate, format, addDays } from 'date-fns';
+import { startOfWeek, endOfWeek, getDate, format, addDays, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from "date-fns/locale";
 import { challenteTemplate } from '../data/challenge-template'
 import { useUser } from "@clerk/clerk-expo";
@@ -12,6 +12,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 type Day = {
   numberDay: string
   weekDay: string 
+  date: Date
 }
 
 export function Home () {
@@ -36,7 +37,8 @@ export function Home () {
         weekDay: format(currentDate, 'iiii', {
           locale: ptBR,
           weekStartsOn: 1
-        }).slice(0,3).toUpperCase()
+        }).slice(0,3).toUpperCase(),
+        date: currentDate
       })
 
       currentDate = addDays(currentDate, 1)
@@ -80,12 +82,14 @@ export function Home () {
     <VStack flex={1}>
       <HomeHeader />
 
-      <Center mt={2} >
-        <DateTimePicker 
+      <Center mt={4} mr={4}>
+        <DateTimePicker
           value={selectedDate} 
-          locale="pt-BR" 
-          firstDayOfWeek={1}
+          locale="pt-BR"
           onChange={handleSelectDate}
+          minimumDate={startOfYear(selectedDate)}
+          maximumDate={endOfYear(selectedDate)}
+          style={{ width: '100%' }}
         />
       </Center>
 
@@ -97,7 +101,10 @@ export function Home () {
             numberDay={item.numberDay}
             weekDay={item.weekDay}
             isActive={selectedDay === item.numberDay} 
-            onPress={() => setSelectedDay(item.numberDay)}
+            onPress={() => {
+              setSelectedDay(item.numberDay)
+              setSelectedDate(item.date)
+            }}
           />
         )}
         horizontal
