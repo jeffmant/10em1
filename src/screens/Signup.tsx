@@ -7,9 +7,8 @@ import { AuthRoutesNavigatiorProps } from "@routes/auth.routes";
 import { Controller, FieldError, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { isClerkAPIResponseError, useOAuth, useSignUp } from "@clerk/clerk-expo";
-import { signUserToChallenge } from "@remote/challenge.supabase";
 import { FontAwesome } from '@expo/vector-icons'
 
 type SignupDTO = {

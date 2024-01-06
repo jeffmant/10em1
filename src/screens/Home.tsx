@@ -5,25 +5,19 @@ import { Daily } from "@components/Daily";
 import { TaskCard } from "@components/TaskCard";
 import { startOfWeek, endOfWeek, getDate, format } from 'date-fns';
 import { ptBR } from "date-fns/locale";
+import { challenteTemplate } from '../data/challenge-template'
+import { useUser } from "@clerk/clerk-expo";
 
 type Day = {
   numberDay: string
   weekDay: string 
 }
 
-const EXERCISES = [
-  { id: '1', title: 'Fiz o Boot', description: 'Hoje é dia de TTT', icon: '🧍‍♂️', checked: true },
-  { id: '2', title: 'Li a Palavra', description: 'Manual do Usuário', icon: '📖', checked: false },
-  { id: '3', title: 'Fiz exercício físico', description: 'Seu corpo precisa obedecer', icon: '🏋️‍♂️', checked: false },
-  { id: '4', title: 'Tomei banho natural', description: 'É só hoje!', icon: '🚿', checked: true },
-  { id: '5', title: 'Li o livro da semana', description: 'Pronto para a modelagem?', icon: '📚', checked: true },
-  { id: '6', title: 'Trasbordei', description: 'Ensinar é aprendizado exponencial', icon: '📢', checked: false },
-]
-
 export function Home () {
+  const { user } = useUser()
   const [days, setDays] = useState<Day[]>([])
   const [selectedDay, setSelectedDay] = useState('')
-  const [exercises, setExercises] = useState(EXERCISES)
+  const [tasks, setTasks] = useState(challenteTemplate.tasks)
 
   function handleWeekDays () {
     const date = new Date()
@@ -47,23 +41,28 @@ export function Home () {
     setDays(formatedDays)
     setSelectedDay(getDate(new Date()).toString())
   }
-  
-  useEffect(() => {
-    handleWeekDays()
-  }, [])
 
-  function handleTask (taskId: string) {
-    const foundTask = exercises.find(exercise => exercise.id === taskId)
+  async function handleTask (taskId: string) {
+    const foundTask = tasks.find(task => task.id === taskId)
 
     if (foundTask) {
       foundTask.checked = !foundTask.checked
+      const filteredTasks = tasks.filter(task => task.id !== taskId)
 
-      setExercises((prev) => ([
-        ...prev,
+      setTasks([
+        ...filteredTasks,
         foundTask
-      ]))
+      ].sort((a, b) => {
+        if(+a.id < +b.id) return -1
+        else if (+a.id > +b.id) return 1
+        return 0
+      }))
     }
   }
+
+  useEffect(() => {
+    handleWeekDays()
+  }, [])
 
   return (
     <VStack flex={1}>
@@ -90,7 +89,7 @@ export function Home () {
 
       <VStack flex={1} px={4}>
         <FlatList 
-          data={EXERCISES}
+          data={tasks}
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <TaskCard data={item} handleTask={handleTask} />
