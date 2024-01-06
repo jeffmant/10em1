@@ -8,7 +8,7 @@ import { Controller, FieldError, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useState } from "react";
-import { isClerkAPIResponseError, useOAuth, useSignUp } from "@clerk/clerk-expo";
+import { isClerkAPIResponseError, useOAuth, useSignUp, useUser } from "@clerk/clerk-expo";
 import { FontAwesome } from '@expo/vector-icons'
 
 type SignupDTO = {
@@ -52,7 +52,6 @@ export function Signup () {
     } catch (err) {
       console.error("OAuth error", err);
     }
-
   }
 
   async function handleSignup (data: SignupDTO) {

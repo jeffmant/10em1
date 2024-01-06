@@ -5,9 +5,10 @@ import { Daily } from "@components/Daily";
 import { TaskCard } from "@components/TaskCard";
 import { startOfWeek, endOfWeek, getDate, format, addDays, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from "date-fns/locale";
-import { challenteTemplate } from '../data/challenge-template'
-import { useUser } from "@clerk/clerk-expo";
+import { DEFAULT_CHALLENGE, challenteTemplate } from '../data/challenge-template'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { supabase } from "@utils/supabase";
+import { useUser } from "@clerk/clerk-expo";
 
 type Day = {
   numberDay: string
@@ -65,10 +66,24 @@ export function Home () {
         ...filteredTasks,
         foundTask
       ].sort((a, b) => {
-        if(+a.id < +b.id) return -1
+        if (+a.id < +b.id) return -1
         else if (+a.id > +b.id) return 1
         return 0
       }))
+    }
+  }
+
+  async function assignUserToChallenge() {
+    await supabase.from('user_challenges').insert([{
+      clerk_user_id: user?.id,
+      challenge_id: DEFAULT_CHALLENGE
+    }])
+  }
+
+  async function getUserChallenges() {
+    const { data } = await supabase.from('user_challenges').select()
+    if (!data || data.length === 0) {
+      assignUserToChallenge()
     }
   }
 
@@ -77,6 +92,10 @@ export function Home () {
       handleWeekDays(selectedDate)
     }
   }, [selectedDate])
+
+  useEffect(() => {
+    getUserChallenges()
+  }, [])
 
   return (
     <VStack flex={1}>
