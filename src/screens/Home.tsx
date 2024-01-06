@@ -1,12 +1,13 @@
-import { FlatList, VStack } from "native-base";
+import { Center, FlatList, VStack } from "native-base";
 import { HomeHeader } from "../components/HomeHeader";
 import { useEffect, useState } from "react";
 import { Daily } from "@components/Daily";
 import { TaskCard } from "@components/TaskCard";
-import { startOfWeek, endOfWeek, getDate, format } from 'date-fns';
+import { startOfWeek, endOfWeek, getDate, format, addDays } from 'date-fns';
 import { ptBR } from "date-fns/locale";
 import { challenteTemplate } from '../data/challenge-template'
 import { useUser } from "@clerk/clerk-expo";
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 type Day = {
   numberDay: string
@@ -19,27 +20,36 @@ export function Home () {
   const [selectedDay, setSelectedDay] = useState('')
   const [tasks, setTasks] = useState(challenteTemplate.tasks)
 
-  function handleWeekDays () {
-    const date = new Date()
-    const startOfWeekDate = startOfWeek(date, { weekStartsOn: 1, locale: ptBR })
-    const endOfWeekDate = endOfWeek(date, { weekStartsOn: 1, locale: ptBR })
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+
+  function handleWeekDays (date: Date) {
+    let startOfWeekDate = startOfWeek(date, { locale: ptBR, weekStartsOn: 1 })
+    let endOfWeekDate = endOfWeek(date, { locale: ptBR, weekStartsOn: 1 })  
     
     let formatedDays = []
 
-    for (let index = getDate(startOfWeekDate); index <= getDate(endOfWeekDate); index++) {
-      const currentDate = new Date(date.getFullYear(), date.getMonth(), index)
+    let currentDate = startOfWeekDate
 
+    while (currentDate.getTime() <= endOfWeekDate.getTime()) {
       formatedDays.push({
-        numberDay: index.toString(),
+        numberDay: currentDate.getDate().toString(),
         weekDay: format(currentDate, 'iiii', {
           locale: ptBR,
           weekStartsOn: 1
         }).slice(0,3).toUpperCase()
       })
+
+      currentDate = addDays(currentDate, 1)
     }
-  
+
     setDays(formatedDays)
-    setSelectedDay(getDate(new Date()).toString())
+    setSelectedDay(getDate(date).toString())
+  }
+
+  function handleSelectDate(_event: DateTimePickerEvent, date?: Date) {
+    if (date) {
+      setSelectedDate(date)
+    }
   }
 
   async function handleTask (taskId: string) {
@@ -61,12 +71,23 @@ export function Home () {
   }
 
   useEffect(() => {
-    handleWeekDays()
-  }, [])
+    if (selectedDate) {
+      handleWeekDays(selectedDate)
+    }
+  }, [selectedDate])
 
   return (
     <VStack flex={1}>
       <HomeHeader />
+
+      <Center mt={2} >
+        <DateTimePicker 
+          value={selectedDate} 
+          locale="pt-BR" 
+          firstDayOfWeek={1}
+          onChange={handleSelectDate}
+        />
+      </Center>
 
       <FlatList
         data={days}
