@@ -3,8 +3,18 @@ import { TouchableHighlight, TouchableHighlightProps } from "react-native";
 import { Entypo } from '@expo/vector-icons'
 import { MaterialIcons,  } from '@expo/vector-icons'
 
+export type Task = {
+  id: string
+  title: string
+  description: string
+  checked: boolean
+  date: string
+  order: number
+  icon: string
+}
+
 type TaskCardProps = TouchableHighlightProps & {
-  data: any
+  data: Task
   handleTask: (taskId: string) => void
 }
 

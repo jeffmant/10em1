@@ -1,14 +1,15 @@
-import { Center, FlatList, VStack } from "native-base";
+import { Center, FlatList, Spinner, VStack } from "native-base";
 import { HomeHeader } from "../components/HomeHeader";
 import { useEffect, useState } from "react";
 import { Daily } from "@components/Daily";
-import { TaskCard } from "@components/TaskCard";
+import { Task, TaskCard } from "@components/TaskCard";
 import { startOfWeek, endOfWeek, getDate, format, addDays, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from "date-fns/locale";
-import { DEFAULT_CHALLENGE, challenteTemplate } from '../data/challenge-template'
+import { DEFAULT_CHALLENGE } from '../data/challenge-template'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { supabase } from "@utils/supabase";
 import { useUser } from "@clerk/clerk-expo";
+import uuid from 'react-native-uuid';
 
 type Day = {
   numberDay: string
@@ -16,15 +17,25 @@ type Day = {
   date: Date
 }
 
+type TaskLog = {
+  logId: string
+  id: string
+  checked: boolean
+  date: string
+}
+
 export function Home () {
   const { user } = useUser()
   const [days, setDays] = useState<Day[]>([])
   const [selectedDay, setSelectedDay] = useState('')
-  const [tasks, setTasks] = useState(challenteTemplate.tasks)
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const [isLoading, setIsLoading] = useState(false)
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
-  function handleWeekDays (date: Date) {
+  async function handleWeekDays (date: Date) {
+    setIsLoading(true)
     let startOfWeekDate = startOfWeek(date, { locale: ptBR, weekStartsOn: 1 })
     let endOfWeekDate = endOfWeek(date, { locale: ptBR, weekStartsOn: 1 })  
     
@@ -47,6 +58,7 @@ export function Home () {
 
     setDays(formatedDays)
     setSelectedDay(getDate(date).toString())
+    setIsLoading(false)
   }
 
   function handleSelectDate(_event: DateTimePickerEvent, date?: Date) {
@@ -61,15 +73,54 @@ export function Home () {
     if (foundTask) {
       foundTask.checked = !foundTask.checked
       const filteredTasks = tasks.filter(task => task.id !== taskId)
-
+      
       setTasks([
         ...filteredTasks,
         foundTask
       ].sort((a, b) => {
-        if (+a.id < +b.id) return -1
-        else if (+a.id > +b.id) return 1
+        if (+a.order < +b.order) return -1
+        else if (+a.order > +b.order) return 1
         return 0
       }))
+
+      const { data: userChallenges } = await supabase.from('user_challenges').select().eq('clerk_user_id', user?.id)
+
+      const taskIsAlreadyChecked = userChallenges?.[0]?.checked_tasks
+        .find((taskLog: TaskLog) => 
+          taskLog.id === foundTask.id && 
+          taskLog.date === format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
+        )
+
+      if (taskIsAlreadyChecked && !foundTask.checked) {
+        const filteredCheckedTasks = userChallenges?.[0]?.checked_tasks
+          .filter((taskLog: TaskLog) => 
+            taskLog.logId !== taskIsAlreadyChecked.logId
+          )
+
+        await supabase
+          .from('user_challenges')
+          .update({ 
+            checked_tasks: filteredCheckedTasks
+          })
+          .eq('clerk_user_id', user?.id)
+      }
+
+      if (!taskIsAlreadyChecked) {
+        await supabase
+          .from('user_challenges')
+          .update({ 
+            checked_tasks: [
+              ...userChallenges?.[0]?.checked_tasks, 
+              {
+                logId: uuid.v4(),
+                id: foundTask.id,
+                checked: true,
+                date: format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
+              }
+            ] 
+          })
+          .eq('clerk_user_id', user?.id)
+      }
     }
   }
 
@@ -81,21 +132,41 @@ export function Home () {
   }
 
   async function getUserChallenges() {
-    const { data } = await supabase.from('user_challenges').select()
-    if (!data || data.length === 0) {
-      assignUserToChallenge()
+    setIsLoading(true)
+    const { data: userChallenges } = await supabase.from('user_challenges').select().eq("clerk_user_id", user?.id)
+    if (!userChallenges || userChallenges.length === 0) {
+      await assignUserToChallenge()
     }
+
+    let { data: foundTasks} = await supabase.from('tasks').select().eq('challenge_id', userChallenges?.[0]?.challenge_id)
+    if (foundTasks) {
+      const weekCheckedTasks = userChallenges?.[0]?.checked_tasks
+      .filter((taskLog: TaskLog) => 
+        new Date(taskLog.date).getTime() >= startOfWeek(selectedDate, { locale: ptBR, weekStartsOn: 1 }).getTime() &&
+        new Date(taskLog.date).getTime() <= endOfWeek(selectedDate, { locale: ptBR, weekStartsOn: 1 }).getTime()
+      )
+      
+      foundTasks = foundTasks.map(foundTask => {
+        const savedTask = weekCheckedTasks.find((taskLog: TaskLog) => taskLog.id === foundTask.id && taskLog.date === format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 }))
+
+        if(savedTask) {
+          foundTask.checked = savedTask.checked ?? false
+        }
+
+        return foundTask
+      })
+
+      setTasks(foundTasks)
+    }
+    setIsLoading(false)
   }
 
   useEffect(() => {
     if (selectedDate) {
       handleWeekDays(selectedDate)
+      getUserChallenges()
     }
   }, [selectedDate])
-
-  useEffect(() => {
-    getUserChallenges()
-  }, [])
 
   return (
     <VStack flex={1}>
@@ -134,17 +205,24 @@ export function Home () {
         minH={10}
       />
 
-      <VStack flex={1} px={4}>
-        <FlatList 
-          data={tasks}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <TaskCard data={item} handleTask={handleTask} />
-          )}
-          showsVerticalScrollIndicator={false}
-          _contentContainerStyle={{ paddingBottom: 8 }}
-        />
-      </VStack>
+      {
+        isLoading ? 
+          <Spinner /> : 
+          (
+            <VStack flex={1} px={4}>
+              <FlatList 
+                data={tasks}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                  <TaskCard data={item} handleTask={handleTask} />
+                )}
+                showsVerticalScrollIndicator={false}
+                _contentContainerStyle={{ paddingBottom: 8 }}
+              />
+            </VStack>
+          )
+      }
+
     </VStack>
   )
 }
