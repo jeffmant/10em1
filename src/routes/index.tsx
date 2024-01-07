@@ -9,10 +9,10 @@ export function Routes () {
   const { isSignedIn } = useSession()
 
   const theme = DefaultTheme;
-  theme.colors.background = isSignedIn ? colors.gray['200'] : "#2a4858"
+  theme.colors.background = isSignedIn ? colors.gray['200'] : "#1B1B1F"
 
   return (
-    <Box flex={1} bg={ isSignedIn ? "gray.200" : "#2a4858"}>
+    <Box flex={1} bg={ isSignedIn ? "gray.200" : "#1B1B1F"}>
       <NavigationContainer theme={theme}>
         <SignedIn>
             <AppRoutes />
