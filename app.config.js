@@ -10,7 +10,7 @@ module.exports = {
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1B1B1F"
     },
     "assetBundlePatterns": [
       "**/*"
