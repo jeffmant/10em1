@@ -135,7 +135,7 @@ export function Signup () {
       }}
       showsVerticalScrollIndicator={false}
     >
-      <VStack flex={1} bg='gray.700' px={10} backgroundColor="#1B1B1F" justifyContent={showEmailSignup ? 'center' : 'space-around'}>
+      <VStack flex={1} bg="#1B1B1F" px={10} justifyContent={showEmailSignup ? 'center' : 'space-around'}>
         <Center mt={8}>
           <Image 
             source={LogoImage}

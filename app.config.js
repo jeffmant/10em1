@@ -21,7 +21,7 @@ module.exports = {
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1B1B1F"
       }
     },
     "web": {

@@ -95,7 +95,7 @@ export function Signin () {
       }}
       showsVerticalScrollIndicator={false}
     >
-      <VStack flex={1} bg='gray.700' px={10} backgroundColor="#1B1B1F" justifyContent="space-around">
+      <VStack flex={1} bg="#1B1B1F" px={10} justifyContent="space-around">
         <Center my={8}>
           <Image 
             source={LogoImage}
