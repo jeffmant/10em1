@@ -234,7 +234,7 @@ export function Profile () {
             render={({ field: { value, onChange } }) => (
               <Input
                 bg="gray.600"
-                color="black"
+                color="white"
                 placeholder="Email"
                 isDisabled
                 value={value}

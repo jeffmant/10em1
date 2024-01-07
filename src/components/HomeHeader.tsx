@@ -31,22 +31,12 @@ export function HomeHeader () {
         </Heading>
       </VStack>
      
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigate('notification')}>
         <Icon 
           as={MaterialIcons} 
           name="notifications"
           color="gray.500"
           size={7}
-        />
-      </TouchableOpacity>
-
-      <TouchableOpacity>
-        <Icon 
-          as={MaterialIcons} 
-          name="settings"
-          color="gray.500"
-          size={7}
-          ml={4}
         />
       </TouchableOpacity>
     </HStack>
