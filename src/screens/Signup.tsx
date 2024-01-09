@@ -8,7 +8,7 @@ import { Controller, FieldError, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useState } from "react";
-import { isClerkAPIResponseError, useOAuth, useSignUp, useUser } from "@clerk/clerk-expo";
+import { isClerkAPIResponseError, useOAuth, useSignUp } from "@clerk/clerk-expo";
 import { FontAwesome } from '@expo/vector-icons'
 
 type SignupDTO = {
@@ -236,7 +236,7 @@ export function Signup () {
                     </Link>
                   </>
                 ) : (
-                  <Box>
+                  <>
                     <Text
                       color="gray.100"
                       fontFamily="body"
@@ -249,7 +249,7 @@ export function Signup () {
 
                     <Input 
                       placeholder="Código"
-                      keyboardType="numeric"
+                      keyboardType="number-pad"
                       value={code}
                       onChangeText={setCode}
                     />
@@ -259,7 +259,7 @@ export function Signup () {
                       onPress={onPressVerify}
                       isLoading={isLoading}
                     />
-                  </Box>
+                  </>
                 )
               }
             </Center>

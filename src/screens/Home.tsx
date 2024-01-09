@@ -1,4 +1,4 @@
-import { Center, FlatList, Spinner, VStack } from "native-base";
+import { Box, Center, FlatList, Spinner, Text, VStack } from "native-base";
 import { HomeHeader } from "../components/HomeHeader";
 import { useEffect, useState } from "react";
 import { Daily } from "@components/Daily";
@@ -6,10 +6,11 @@ import { Task, TaskCard } from "@components/TaskCard";
 import { startOfWeek, endOfWeek, getDate, format, addDays, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from "date-fns/locale";
 import { DEFAULT_CHALLENGE } from '../data/challenge-template'
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent, DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { supabase } from "@utils/supabase";
 import { useUser } from "@clerk/clerk-expo";
 import uuid from 'react-native-uuid';
+import { Platform } from "react-native";
 
 type Day = {
   numberDay: string
@@ -33,6 +34,23 @@ export function Home () {
   const [isLoading, setIsLoading] = useState(false)
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+
+  const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios' ? true : false)
+
+  function handleAndroidDatePicker() {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(!showDatePicker)
+
+      DateTimePickerAndroid.open({
+        value: selectedDate,
+        onChange: (event, date) => handleSelectDate(event, date),
+        minimumDate: startOfYear(selectedDate),
+        maximumDate: endOfYear(selectedDate),
+        negativeButton: { label: 'Cancelar' }
+      })
+    }
+    
+  }
 
   async function handleWeekDays (date: Date) {
     setIsLoading(true)
@@ -125,20 +143,22 @@ export function Home () {
   }
 
   async function assignUserToChallenge() {
-    await supabase.from('user_challenges').insert([{
+    const { data: createdUserChallenges } = await supabase.from('user_challenges').insert([{
       clerk_user_id: user?.id,
       challenge_id: DEFAULT_CHALLENGE
-    }])
+    }]).select()
+
+    return createdUserChallenges
   }
 
   async function getUserChallenges() {
     setIsLoading(true)
-    const { data: userChallenges } = await supabase.from('user_challenges').select().eq("clerk_user_id", user?.id)
+    let { data: userChallenges } = await supabase.from('user_challenges').select().eq("clerk_user_id", user?.id)
     if (!userChallenges || userChallenges.length === 0) {
-      await assignUserToChallenge()
+      userChallenges = await assignUserToChallenge()
     }
 
-    let { data: foundTasks} = await supabase.from('tasks').select().eq('challenge_id', userChallenges?.[0]?.challenge_id)
+    let { data: foundTasks} = await supabase.from('tasks').select().eq('challenge_id', userChallenges?.[0]?.challenge_id).order('order', { ascending: true })
     if (foundTasks) {
       const weekCheckedTasks = userChallenges?.[0]?.checked_tasks
       .filter((taskLog: TaskLog) => 
@@ -172,15 +192,25 @@ export function Home () {
     <VStack flex={1}>
       <HomeHeader />
 
-      <Center mt={4} mr={4}>
-        <DateTimePicker
-          value={selectedDate} 
-          locale="pt-BR"
-          onChange={handleSelectDate}
-          minimumDate={startOfYear(selectedDate)}
-          maximumDate={endOfYear(selectedDate)}
-          style={{ width: '100%' }}
-        />
+      <Center mt={4} flexDirection="row" alignContent="center">
+        {
+          Platform.OS === 'ios' ? (
+              <DateTimePicker
+                value={selectedDate} 
+                locale="pt-BR"
+                onChange={handleSelectDate}
+                minimumDate={startOfYear(selectedDate)}
+                maximumDate={endOfYear(selectedDate)}
+              /> 
+          ) : 
+          (
+            <Box px={2} py={1} bgColor="gray.300" rounded="lg">
+              <Text fontFamily="body" fontWeight="normal" fontSize="lg" onPress={handleAndroidDatePicker}>
+                {format(selectedDate, 'dd/MM/yyyy', { locale: ptBR })}
+              </Text>
+            </Box>
+          )
+        }
       </Center>
 
       <FlatList
