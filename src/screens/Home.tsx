@@ -8,9 +8,9 @@ import { ptBR } from "date-fns/locale";
 import { DEFAULT_CHALLENGE } from '../data/challenge-template'
 import DateTimePicker, { DateTimePickerEvent, DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { supabase } from "@utils/supabase";
-import { useUser } from "@clerk/clerk-expo";
 import uuid from 'react-native-uuid';
 import { Platform } from "react-native";
+import { useUser } from '@realm/react'
 
 type Day = {
   numberDay: string
@@ -26,7 +26,7 @@ type TaskLog = {
 }
 
 export function Home () {
-  const { user } = useUser()
+  const user = useUser()
   const [days, setDays] = useState<Day[]>([])
   const [selectedDay, setSelectedDay] = useState('')
   const [tasks, setTasks] = useState<Task[]>([])

@@ -1,25 +1,21 @@
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { Box, useTheme } from "native-base";
 import { AppRoutes } from "./app.routes";
-import { SignedIn, SignedOut, useSession } from "@clerk/clerk-expo";
 import { AuthRoutes } from "./auth.routes";
+import { UserProvider } from '@realm/react'
 
 export function Routes () {
   const { colors } = useTheme()
-  const { isSignedIn } = useSession()
 
   const theme = DefaultTheme;
-  theme.colors.background = isSignedIn ? colors.gray['200'] : "#1B1B1F"
+  theme.colors.background = colors.gray['200']
 
   return (
-    <Box flex={1} bg={ isSignedIn ? "gray.200" : "#1B1B1F"}>
+    <Box flex={1} bg="gray.200">
       <NavigationContainer theme={theme}>
-        <SignedIn>
-            <AppRoutes />
-        </SignedIn>
-        <SignedOut>
-            <AuthRoutes />
-        </SignedOut>
+        <UserProvider fallback={AuthRoutes}>
+          <AppRoutes />
+        </UserProvider>
       </NavigationContainer>
     </Box>
   )

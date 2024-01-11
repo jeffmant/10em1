@@ -3,13 +3,12 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { UserPhoto } from "./UserPhoto";
 import { TouchableOpacity } from "react-native";
 import userPhotoDefault from '@assets/userPhotoDefault.png'
-import { useUser } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
 import { AppRoutesNavigatiorProps } from "@routes/app.routes";
-
+import { useUser } from '@realm/react'
 
 export function HomeHeader () {
-  const { user } = useUser()
+  const user = useUser()
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
 
   return (
@@ -17,7 +16,7 @@ export function HomeHeader () {
       <TouchableOpacity onPress={() => navigate('profile')} >
         <UserPhoto 
           source={
-            { uri: user?.imageUrl} || userPhotoDefault
+            { uri: user?.profile?.pictureUrl } || userPhotoDefault
           }
           alt="Imagem do usuário"
           size={12}
@@ -27,7 +26,7 @@ export function HomeHeader () {
       
       <VStack flex={1}>
         <Heading color="gray.700" fontSize="md" fontFamily="heading">
-          Jefferson
+          { user?.profile?.name?.split(' ')[0] }
         </Heading>
       </VStack>
      

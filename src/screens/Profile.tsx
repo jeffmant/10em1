@@ -14,8 +14,8 @@ import * as Yup from 'yup'
 import userPhotoDefault from '@assets/userPhotoDefault.png'
 import { Controller, FieldError, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { isClerkAPIResponseError, useClerk, useUser } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
+import { useApp, useUser } from "@realm/react";
 
 type ProfileDTO = {
   name: string
@@ -52,19 +52,19 @@ const profileSchema = Yup.object({
 const PHOTO_SIZE = 32
 
 export function Profile () {
-  const { user } = useUser()
-  const { signOut } = useClerk()
   const { goBack } = useNavigation()
+  const user = useUser()
+  const app = useApp()
 
   const [photoIsLoading, setPhotoIsLoading] = useState(false)
-  const [userPhoto, setUserPhoto] = useState(user?.imageUrl)
+  const [userPhoto, setUserPhoto] = useState(user?.profile?.pictureUrl)
   const [isLoading, setIsLoading] = useState(false)
  
   const toast = useToast()
   const { control, handleSubmit, formState: { errors }, setError } = useForm<ProfileDTO>({
     defaultValues: {
-      name: user?.firstName + ' ' + user?.lastName,
-      email: user?.primaryEmailAddress?.emailAddress
+      name: user?.profile?.name,
+      email: user?.profile?.email
     },
     resolver: yupResolver(profileSchema) as unknown as Resolver<ProfileDTO, any>
   })
@@ -98,14 +98,12 @@ export function Profile () {
         const fileExtension = selectedImage.assets?.[0]?.uri.split('.').pop()
 
         const imageFile = {
-          name: `${user?.firstName}.${fileExtension}`.toLowerCase(),
+          name: `${user?.profile?.email}.${fileExtension}`.toLowerCase(),
           uri: selectedImage.assets?.[0]?.uri,
           type: `${selectedImage.assets?.[0]?.type}/${fileExtension}`
         } as any
 
-        await user?.setProfileImage({
-          file: imageFile
-        })
+        // TODO: update profile image
 
         setUserPhoto(selectedImage.assets?.[0]?.uri)
 
@@ -116,19 +114,6 @@ export function Profile () {
         })
       }
     } catch (error: any) {
-      if (isClerkAPIResponseError(error)) {
-        for (const err of error.errors) {
-          if (err.meta?.paramName) {
-            setError((
-              err.meta.paramName === 'email_address' ? 
-              "email" : 
-              err.meta.paramName
-            ) as keyof ProfileDTO, { 
-              message: err.message 
-            } as FieldError)
-          }
-        }
-      }
       toast.show({
         description: error.message || "Algo deu errado. Tente novamente!",
         placement: 'top',
@@ -142,10 +127,7 @@ export function Profile () {
   async function handleProfileUpdate (data: ProfileDTO) {
     setIsLoading(true)
     try {
-      await user?.update({
-        firstName: data.name.split(' ')[0],
-        lastName: data.name.split(' ')[1] || '',
-      })
+      // TODO: allow update user
 
       toast.show({
         title: 'Perfil atualizado com sucesso',
@@ -154,19 +136,6 @@ export function Profile () {
       })
       
     } catch (error: any) {
-      if (isClerkAPIResponseError(error)) {
-        for (const err of error.errors) {
-          if (err.meta?.paramName) {
-            setError((
-              err.meta.paramName === 'email_address' ? 
-              "email" : 
-              err.meta.paramName
-            ) as keyof ProfileDTO, { 
-              message: err.message 
-            } as FieldError)
-          }
-        }
-      }
       toast.show({
         description: error.message || "Algo deu errado. Tente novamente!",
         placement: 'top',
@@ -250,7 +219,7 @@ export function Profile () {
             isLoading={isLoading}
           />
 
-          <TouchableOpacity onPress={() => signOut()}>
+          <TouchableOpacity onPress={() => app.currentUser?.logOut()}>
             <Text
               mt={16} 
               fontFamily="heading" 
