@@ -8,7 +8,7 @@ export type Task = {
   title: string
   description: string
   checked: boolean
-  date: string
+  date?: string
   order: number
   icon: string
 }

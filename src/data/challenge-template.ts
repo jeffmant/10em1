@@ -1,4 +1,4 @@
-export const DEFAULT_CHALLENGE = "5b7d6001-8ea7-4339-bafa-df5dd3b83679"
+export const DEFAULT_CHALLENGE = "3d12169f-c909-48f3-8db0-a84dfc4c39fc"
 
 export const challenteTemplate = {
   name: "10em1 2024",

@@ -1,8 +1,10 @@
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
-import { Box, useTheme } from "native-base";
+import { Box, Spinner, useTheme } from "native-base";
 import { AppRoutes } from "./app.routes";
 import { AuthRoutes } from "./auth.routes";
 import { UserProvider } from '@realm/react'
+import { RealmProvider, syncConfig } from "../libs/realm";
+import { Loading } from "@components/Loading";
 
 export function Routes () {
   const { colors } = useTheme()
@@ -14,7 +16,13 @@ export function Routes () {
     <Box flex={1} bg="gray.200">
       <NavigationContainer theme={theme}>
         <UserProvider fallback={AuthRoutes}>
-          <AppRoutes />
+          <RealmProvider 
+            sync={syncConfig} 
+            fallback={Loading}
+            
+          >
+            <AppRoutes />
+          </RealmProvider>
         </UserProvider>
       </NavigationContainer>
     </Box>

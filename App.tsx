@@ -1,3 +1,4 @@
+import 'react-native-get-random-values'
 import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
 import { NativeBaseProvider, StatusBar } from "native-base";
 import { Routes } from '@routes/index';
