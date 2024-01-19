@@ -1,5 +1,5 @@
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
-import { Box, Spinner, useTheme } from "native-base";
+import { Box, useTheme } from "native-base";
 import { AppRoutes } from "./app.routes";
 import { AuthRoutes } from "./auth.routes";
 import { UserProvider } from '@realm/react'
@@ -19,7 +19,6 @@ export function Routes () {
           <RealmProvider 
             sync={syncConfig} 
             fallback={Loading}
-            
           >
             <AppRoutes />
           </RealmProvider>
