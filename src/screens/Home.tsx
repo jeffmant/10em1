@@ -1,35 +1,23 @@
-import { Box, Center, FlatList, Spinner, Text, VStack } from "native-base";
+import { Box, Center, Spinner, Text, VStack } from "native-base";
 import { HomeHeader } from "../components/HomeHeader";
 import { useEffect, useState } from "react";
-import { Daily } from "@components/Daily";
-import { Task, TaskCard } from "@components/TaskCard";
-import { startOfWeek, endOfWeek, getDate, format, addDays, startOfYear, endOfYear } from 'date-fns';
+import { format, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from "date-fns/locale";
 import DateTimePicker, { DateTimePickerEvent, DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Platform } from "react-native";
 import { useUser } from '@realm/react'
 import { useRealm, useQuery } from '@libs/realm'
 import { UserChallenge } from "@libs/realm/schemas/UserChallenge.schema";
-import { Task as TaskRealm } from "@libs/realm/schemas/Task.schema";
-import { TaskLog as TaskLogRealm } from "@libs/realm/schemas/TaskLog.schema";
 import { DEFAULT_CHALLENGE } from "../data/challenge-template";
-
-type Day = {
-  numberDay: string
-  weekDay: string 
-  date: Date
-}
+import { DailyList } from "@components/DailyList";
+import { TaskList } from "@components/TaskList";
 
 export function Home () {
   const user = useUser()
   const realm = useRealm()
   const userChallengeCollection = useQuery(UserChallenge)
-  const taskCollection = useQuery(TaskRealm)
-  const taskLogCollection = useQuery(TaskLogRealm)
 
-  const [days, setDays] = useState<Day[]>([])
-  const [selectedDay, setSelectedDay] = useState('')
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [seletedUserChallenge, setSeletedUserChallenge] = useState<UserChallenge>()
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -51,145 +39,49 @@ export function Home () {
     }
   }
 
-  async function handleWeekDays (date: Date) {
-    setIsLoading(true)
-    let startOfWeekDate = startOfWeek(date, { locale: ptBR, weekStartsOn: 1 })
-    let endOfWeekDate = endOfWeek(date, { locale: ptBR, weekStartsOn: 1 })  
-
-    let formatedDays = []
-
-    let currentDate = startOfWeekDate
-
-    while (currentDate.getTime() <= endOfWeekDate.getTime()) {
-      formatedDays.push({
-        numberDay: currentDate.getDate().toString(),
-        weekDay: format(currentDate, 'iiii', {
-          locale: ptBR,
-          weekStartsOn: 1
-        }).slice(0,3).toUpperCase(),
-        date: currentDate
-      })
-
-      currentDate = addDays(currentDate, 1)
-    }
-
-    setDays(formatedDays)
-    setSelectedDay(getDate(date).toString())
-    setIsLoading(false)
-  }
-
   function handleSelectDate(_event: DateTimePickerEvent, date?: Date) {
     if (date) {
       setSelectedDate(date)
     }
   }
 
-  async function handleTask (taskId: string) {
-    const foundTask = tasks.find(task => task.id === taskId)
-
-    if (foundTask) {
-      foundTask.checked = !foundTask.checked
-      const filteredTasks = tasks.filter(task => task.id !== taskId)
-      
-      setTasks([
-        ...filteredTasks,
-        foundTask
-      ].sort((a, b) => {
-        if (+a.order < +b.order) return -1
-        else if (+a.order > +b.order) return 1
-        return 0
-      }))
-    }
-
-    const userChallenges = userChallengeCollection.filtered('userId = $0', user.id)
-
-    const taskLogs = taskLogCollection.filtered('userChallengeId = $0', userChallenges[0]._id)
-
-    const taskIsAlreadyChecked = taskLogs
-        .find((taskLog: TaskLogRealm) => 
-          taskLog.taskId === foundTask?.id && 
-          taskLog.date === format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
-        )
-
-    if (taskIsAlreadyChecked) {
-      realm.write(() => {
-        realm.delete(taskIsAlreadyChecked)
-      })
-    } else {
-      realm.write(() => {
-        realm.create(TaskLogRealm.name, TaskLogRealm.generate({
-          checked: true,
-          date: format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 }),
-          taskId: foundTask!.id,
-          userChallengeId: userChallenges[0]._id
-        }))
-      })
-    }
+  async function fetchUserChallenges(): Promise<UserChallenge[]> {
+    return userChallengeCollection.filtered('userId = $0', user.id) as unknown as UserChallenge[]
   }
 
-  async function assignUserToChallenge(){
+  async function assignUserToChallenge(): Promise<void> {
     realm.write(() => {
       realm.create(UserChallenge.name, UserChallenge.generate({
         userId: user.id,
         challengeId: DEFAULT_CHALLENGE
       }))
     })
-
-    return userChallengeCollection.filtered('userId = $0', user.id)
   }
 
-  async function getUserChallenges () {
+  async function selectUserChallenge () {
     try {
-
       setIsLoading(true)
-      let userChallenges = userChallengeCollection.filtered('userId = $0', user.id)
 
-      if(!userChallenges || userChallenges.length === 0) {
-        userChallenges = await assignUserToChallenge()
+      let foundUserChallenges = await fetchUserChallenges()
+
+      if(!foundUserChallenges || foundUserChallenges.length === 0) {
+        await assignUserToChallenge()
+        foundUserChallenges = await fetchUserChallenges()
       }
 
-      let foundTasks = taskCollection.filtered('challengeId = $0', userChallenges[0].challengeId).sorted('order')
-
-      if(foundTasks) {
-        const dayCheckedTasks = taskLogCollection
-          .filtered('userChallengeId = $0 AND date = $1', 
-            userChallenges[0]._id, 
-            format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
-          )
-      
-        const filteredTasks: Task[] = foundTasks.map(foundTask => {
-          const taskLog: TaskLogRealm | undefined = dayCheckedTasks.find((taskLogRealm: TaskLogRealm) => taskLogRealm.taskId === foundTask._id)
-          
-          const filteredTask: Task = { 
-            id: foundTask._id,
-            title: foundTask.title,
-            description: foundTask.description,
-            icon: foundTask.icon,
-            order: foundTask.order,
-            checked: taskLog?.checked || false,
-            date: taskLog?.date
-          }
-
-          return filteredTask
-        })
-
-        setTasks(filteredTasks)
-      }
-
+      setSeletedUserChallenge(foundUserChallenges[0])
     } catch (error) {
       console.log(error)
     } finally {
       setIsLoading(false)
     }
-
   }
 
   useEffect(() => {
-    if (selectedDate && user.id) {
-      handleWeekDays(selectedDate)
-      getUserChallenges()
+    if (selectedDate) {
+      selectUserChallenge()
     }
-  }, [selectedDate, user.id])
+  }, [selectedDate])
 
   return (
     <VStack flex={1}>
@@ -216,45 +108,9 @@ export function Home () {
         }
       </Center>
 
-      <FlatList
-        data={days}
-        keyExtractor={item => item.numberDay}
-        renderItem={({ item }) => (
-          <Daily
-            numberDay={item.numberDay}
-            weekDay={item.weekDay}
-            isActive={selectedDay === item.numberDay} 
-            onPress={() => {
-              setSelectedDay(item.numberDay)
-              setSelectedDate(item.date)
-            }}
-          />
-        )}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        _contentContainerStyle={{ px: 2 }}
-        mt={4}
-        maxH={24}
-        minH={10}
-      />
+      <DailyList selectedDate={selectedDate} handleSelectDate={setSelectedDate} />
 
-      {
-        isLoading ? 
-          <Spinner /> : 
-          (
-            <VStack flex={1} px={4}>
-              <FlatList 
-                data={tasks}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                  <TaskCard data={item} handleTask={handleTask} />
-                )}
-                showsVerticalScrollIndicator={false}
-                _contentContainerStyle={{ paddingBottom: 8 }}
-              />
-            </VStack>
-          )
-      }
+      { isLoading ? <Spinner /> : <TaskList selectedDate={selectedDate} userChallenge={seletedUserChallenge!} /> }
 
     </VStack>
   )

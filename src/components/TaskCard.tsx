@@ -1,9 +1,8 @@
 import { HStack, Heading, Icon, IconButton, Text, VStack } from "native-base";
 import { TouchableHighlight, TouchableHighlightProps } from "react-native";
 import { Entypo } from '@expo/vector-icons'
-import { MaterialIcons,  } from '@expo/vector-icons'
 
-export type Task = {
+export type TaskCardProps = {
   id: string
   title: string
   description: string
@@ -13,12 +12,12 @@ export type Task = {
   icon: string
 }
 
-type TaskCardProps = TouchableHighlightProps & {
-  data: Task
+type Props = TouchableHighlightProps & {
+  data: TaskCardProps
   handleTask: (taskId: string) => void
 }
 
-export function TaskCard ({ data, handleTask, ...rest }: TaskCardProps) {
+export function TaskCard ({ data, handleTask, ...rest }: Props) {
   return (
     <TouchableHighlight
       {...rest}
