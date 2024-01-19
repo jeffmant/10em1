@@ -1,49 +1,58 @@
-import { Center, Heading, Image, Link, ScrollView, StatusBar, Text, VStack, useToast } from "native-base";
+import { Center, Heading, Image, ScrollView, StatusBar, VStack, useToast } from "native-base";
 import LogoImage from '@assets/logo.png'
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 import { useNavigation } from "@react-navigation/native";
 import { AuthRoutesNavigatiorProps } from "@routes/auth.routes";
+import { Controller, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Controller, FieldError, useForm } from "react-hook-form";
 import { useState } from "react";
-import { FontAwesome } from '@expo/vector-icons'
 import { useEmailPasswordAuth } from "@realm/react";
 
-type SigninDTO = {
+type SignupDTO = {
   email: string
   password: string
+  confirmPassword: string
 }
 
-const signinValidationSchema = Yup.object({
-  email: Yup.string().required('Informe o email').email('Email inválido'),
-  password: Yup.string().required('Informe a senha').min(8, 'Insira pelo menos 8 dígitos')
+const signupValidationSchema = Yup.object({
+  email: Yup.string().required('Insira o email').email('Email inválido'),
+  password: Yup.string().required('Insira a senha').min(8, 'A senha precisa ter pelo menos 8 caracteres'),
+  confirmPassword: Yup.string().required('Confirme a senha').oneOf([Yup.ref('password'), ''], 'As senhas devem ser iguais')
 })
 
-export function Signin () {
+export function Signup () {
+  const [isLoading, setIsLoading] = useState(false)
+  
   const { navigate } = useNavigation<AuthRoutesNavigatiorProps>()
+
+  const { control, handleSubmit, formState: { errors, isValid }, setError } = useForm<SignupDTO>({
+    resolver: yupResolver(signupValidationSchema)
+  })
+
+  const {register, result, logIn, } = useEmailPasswordAuth();
 
   const toast = useToast()
 
-  const { control, handleSubmit, setError, formState: { errors, isValid } } = useForm<SigninDTO>({
-    resolver: yupResolver(signinValidationSchema)
-  })
 
-  const {logIn, result} = useEmailPasswordAuth();
-
-  const [isLoading, setIsLoading] = useState(false)
-
-
-  async function handleSignin ({ email, password }: SigninDTO) { 
+  async function handleSignup ({ email, password }: SignupDTO) {
     try {
       setIsLoading(true)
 
-      logIn({ email, password })
-     
+      register({ email, password })
+
+      if(result.success) {
+        console.log(result)
+        logIn({ email, password })
+      }
+
+
     } catch (error: any) {
+      console.log(JSON.stringify(error))
+
       toast.show({
-        description: error.message || "Algo deu errado. Tente novamente!",
+        title: error.message || 'Algo deu errado. Tente novamente!',
         placement: 'top',
         bgColor: 'red.500'
       })
@@ -59,44 +68,37 @@ export function Signin () {
         backgroundColor='transparent'
         translucent
       />
-    
       <ScrollView 
         contentContainerStyle={{ 
           flexGrow: 1 
         }}
         showsVerticalScrollIndicator={false}
       >
-        <VStack flex={1} bg="#1B1B1F" px={10} justifyContent="space-around">
-          <Center my={8}>
+        <VStack flex={1} bg="#1B1B1F" px={10} justifyContent="space-evenly">
+          <Center mt={8}>
             <Image 
               source={LogoImage}
               size={40}
-              resizeMode="contain"
+              resizeMode="contain" 
               alt="App Logo"
             />
-            <Text
-              color="gray.100"
-              fontSize="xl"
-            >
-              Sangue, suor, lágrima e gordura.
-            </Text>
           </Center>
 
-          <Center mt={8}>
+          <Center>
             <Heading 
               color="gray.100"
               fontSize="xl"
               mb={4}
               fontFamily="heading"
               >
-              Acesse sua conta
+              Crie sua conta
             </Heading>
 
-            <Controller 
-              control={control}
+            <Controller
               name="email"
+              control={control}
               render={({ field: { value, onChange } }) => (
-                <Input 
+                <Input
                   placeholder="Email"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -107,11 +109,11 @@ export function Signin () {
               )}
             />
 
-            <Controller 
-              control={control}
+            <Controller
               name="password"
+              control={control}
               render={({ field: { value, onChange } }) => (
-                <Input 
+                <Input
                   placeholder="Senha"
                   secureTextEntry
                   value={value}
@@ -121,28 +123,33 @@ export function Signin () {
               )}
             />
 
-            <Button
-              title="Entrar"
-              onPress={handleSubmit(handleSignin)}
+            <Controller
+              name="confirmPassword"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <Input
+                  placeholder="Confirmar senha"
+                  secureTextEntry
+                  value={value}
+                  onChangeText={onChange}
+                  errorMessage={errors?.confirmPassword?.message}
+                />
+              )}
+            />
+
+            <Button 
+              title="Criar conta"
+              onPress={handleSubmit(handleSignup)}
               disabled={!isValid || isLoading}
               isLoading={isLoading}
             />
-
           </Center>
 
           <Center my={8}>
-            <Text
-              color="gray.100"
-              fontSize="sm"
-              mb={3}
-              fontFamily="body"
-            >
-              Ainda não tem acesso?
-            </Text>
             <Button 
-              title="Criar conta"
+              title="Voltar para login"
               variant="outline"
-              onPress={() => navigate('signup')}
+              onPress={() => navigate('signin')}
             />
             </Center>
         </VStack>

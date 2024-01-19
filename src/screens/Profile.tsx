@@ -63,7 +63,7 @@ export function Profile () {
   const toast = useToast()
   const { control, handleSubmit, formState: { errors }, setError } = useForm<ProfileDTO>({
     defaultValues: {
-      name: user?.profile?.name,
+      name: user?.profile?.name || user?.profile?.email?.split('@')[0],
       email: user?.profile?.email
     },
     resolver: yupResolver(profileSchema) as unknown as Resolver<ProfileDTO, any>
@@ -163,7 +163,7 @@ export function Profile () {
             ) : (
               <UserPhoto
                 source={
-                  { uri: userPhoto } || userPhotoDefault
+                  userPhoto ? { uri: userPhoto } : userPhotoDefault
                 }
                 alt="Foto do usuário"
                 size={PHOTO_SIZE}

@@ -16,7 +16,7 @@ export function HomeHeader () {
       <TouchableOpacity onPress={() => navigate('profile')} >
         <UserPhoto 
           source={
-            { uri: user?.profile?.pictureUrl } || userPhotoDefault
+            user?.profile?.pictureUrl ? { uri: user?.profile?.pictureUrl } : userPhotoDefault
           }
           alt="Imagem do usuário"
           size={12}
@@ -26,7 +26,7 @@ export function HomeHeader () {
       
       <VStack flex={1}>
         <Heading color="gray.700" fontSize="md" fontFamily="heading">
-          { user?.profile?.name?.split(' ')[0] }
+          { user?.profile?.name?.split(' ')[0] || user?.profile?.email?.split('@')[0] }
         </Heading>
       </VStack>
      

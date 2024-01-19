@@ -55,7 +55,7 @@ export function Home () {
     setIsLoading(true)
     let startOfWeekDate = startOfWeek(date, { locale: ptBR, weekStartsOn: 1 })
     let endOfWeekDate = endOfWeek(date, { locale: ptBR, weekStartsOn: 1 })  
-    
+
     let formatedDays = []
 
     let currentDate = startOfWeekDate
@@ -107,17 +107,15 @@ export function Home () {
 
     const taskIsAlreadyChecked = taskLogs
         .find((taskLog: TaskLogRealm) => 
-          taskLog._id === foundTask?.id && 
+          taskLog.taskId === foundTask?.id && 
           taskLog.date === format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
         )
 
-    if (taskIsAlreadyChecked && !foundTask?.checked) {
+    if (taskIsAlreadyChecked) {
       realm.write(() => {
         realm.delete(taskIsAlreadyChecked)
       })
-    }
-
-    if (!taskIsAlreadyChecked) {
+    } else {
       realm.write(() => {
         realm.create(TaskLogRealm.name, TaskLogRealm.generate({
           checked: true,
@@ -129,7 +127,7 @@ export function Home () {
     }
   }
 
-  function assignUserToChallenge(){
+  async function assignUserToChallenge(){
     realm.write(() => {
       realm.create(UserChallenge.name, UserChallenge.generate({
         userId: user.id,
@@ -140,18 +138,18 @@ export function Home () {
     return userChallengeCollection.filtered('userId = $0', user.id)
   }
 
-  function getUserChallenges () {
+  async function getUserChallenges () {
     try {
 
       setIsLoading(true)
       let userChallenges = userChallengeCollection.filtered('userId = $0', user.id)
-      
+
       if(!userChallenges || userChallenges.length === 0) {
-        userChallenges = assignUserToChallenge()
+        userChallenges = await assignUserToChallenge()
       }
 
       let foundTasks = taskCollection.filtered('challengeId = $0', userChallenges[0].challengeId).sorted('order')
-    
+
       if(foundTasks) {
         const dayCheckedTasks = taskLogCollection
           .filtered('userChallengeId = $0 AND date = $1', 
@@ -177,7 +175,7 @@ export function Home () {
 
         setTasks(filteredTasks)
       }
-            
+
     } catch (error) {
       console.log(error)
     } finally {
@@ -187,11 +185,11 @@ export function Home () {
   }
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && user.id) {
       handleWeekDays(selectedDate)
       getUserChallenges()
     }
-  }, [selectedDate])
+  }, [selectedDate, user.id])
 
   return (
     <VStack flex={1}>
