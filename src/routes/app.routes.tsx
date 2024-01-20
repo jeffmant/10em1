@@ -1,16 +1,16 @@
 import { Home } from '@screens/Home';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Profile } from '@screens/Profile';
 import { Notification } from '@screens/Notification';
-import { House, User, TrendUp } from 'phosphor-react-native';
+import { House, Gear, TrendUp } from 'phosphor-react-native';
 import { Activity } from '@screens/Activity';
 import { useTheme } from 'native-base';
 import { Platform } from 'react-native';
+import { Settings } from '@screens/Settings';
 
 type AppRoutes = {
   home: undefined
   activity: undefined
-  profile: undefined
+  settings: undefined
   notification: undefined
 }
 
@@ -34,10 +34,10 @@ export function AppRoutes () {
           position: 'absolute',
           borderTopWidth: 0,
           height: Platform.OS === 'android' ? 'auto' : 96,
-          paddingBottom: sizes[10],
-          paddingTop: sizes[10],
+          paddingBottom: sizes[8],
+          paddingTop: sizes[8],
           borderRadius: 50,
-          margin: 16
+          margin: 32,
         }
       }}
     >
@@ -62,11 +62,11 @@ export function AppRoutes () {
       />
 
       <Screen 
-        name="profile"
-        component={Profile}
+        name="settings"
+        component={Settings}
         options={{
           tabBarIcon: ({ color }) => (
-            <User color={color} size={iconSize} />
+            <Gear color={color} size={iconSize} />
           ),
         }}
       />

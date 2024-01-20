@@ -98,7 +98,7 @@ export function TaskList ({ selectedDate, userChallenge }: TaskListProps) {
             <TaskCard data={item} handleTask={handleTask} />
           )}
           showsVerticalScrollIndicator={false}
-          _contentContainerStyle={{ paddingBottom: 8 }}
+          _contentContainerStyle={{ paddingBottom: 32, paddingTop: 2 }}
         />
       </VStack>
     )

@@ -29,7 +29,7 @@ export function Activity () {
           pt={16}
           pb={4}
         >
-          Activity
+          Resultados
         </Heading>
       </VStack>
 
@@ -58,7 +58,7 @@ export function Activity () {
         </HStack>
       </VStack>
 
-      <VStack mt={12} px={8}>
+      <VStack mt={8} px={8}>
         <Box
           rounded="2xl"
           bgColor="gray.100"
@@ -82,7 +82,7 @@ export function Activity () {
               <Heading
                 color="green.500"
                 fontSize="3xl"
-                textAlign="right"
+                textAlign="left"
               >
                 98%
               </Heading>
@@ -125,7 +125,7 @@ export function Activity () {
                 <Heading
                   color="gray.700"
                   fontSize="2xl"
-                  textAlign="right"
+                  textAlign="left"
                 >
                  🏆 32
                 </Heading>

@@ -67,7 +67,7 @@ export function DailyList({ selectedDate, handleSelectDate }: DailyListProps) {
       )}
       horizontal
       showsHorizontalScrollIndicator={false}
-      _contentContainerStyle={{ px: 2 }}
+      _contentContainerStyle={{ px: 4 }}
       mt={4}
       maxH={24}
       minH={10}
