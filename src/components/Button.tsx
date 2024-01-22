@@ -5,7 +5,7 @@ type ButtonProps = IButtonProps & {
   button?: 'solid' | 'outline'
 }
 
-export function Button ({ title, bg, color, variant = 'solid', ...rest }: ButtonProps) {
+export function Button ({ title, bg, color, variant = 'solid', fontSize, ...rest }: ButtonProps) {
   return (
     <NativeBaseButton
       w="full"
@@ -22,7 +22,7 @@ export function Button ({ title, bg, color, variant = 'solid', ...rest }: Button
       <Text
         color={color ? color : variant === 'outline' ? "blue.500" : "white"}
         fontFamily="heading"
-        fontSize="sm"
+        fontSize={fontSize ?? 'sm'}
       >
         {title}
       </Text>

@@ -1,7 +1,7 @@
-import { Spinner } from "native-base";
+import { Spinner, ISpinnerProps } from "native-base";
 
-export function Loading () {
+export function Loading ({ ...rest }: ISpinnerProps) {
   return (
-    <Spinner />
+    <Spinner {...rest} />
   )
 }

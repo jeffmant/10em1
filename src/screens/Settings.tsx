@@ -1,7 +1,19 @@
+import { Button } from "@components/Button";
+import { useAuth } from "@realm/react";
 import { Box, Divider, HStack, Heading, Text, VStack } from "native-base";
 import { Star, Info, ChatCircleDots, CaretRight, ShareFat } from 'phosphor-react-native'
+import { useState } from "react";
 
 export function Settings () {
+  const [isLoading, setIsLoading] = useState(false)
+  const { logOut } = useAuth()
+
+  function handleLogout () {
+    setIsLoading(true)
+    logOut()
+    setIsLoading(false)
+  }
+
   return (
     <VStack>
       <VStack>
@@ -16,7 +28,7 @@ export function Settings () {
         </Heading>
       </VStack>
 
-      <VStack mt={8} px={8}>
+      <VStack mt={8} px={8} justifyContent="space-between">
         <Box
           rounded="2xl"
           bgColor="gray.100"
@@ -59,8 +71,17 @@ export function Settings () {
               <CaretRight size={24} />
             </HStack>
           </VStack>
-
         </Box>
+
+        <Button 
+          title="Sair do App" 
+          variant="outline"
+          fontSize="md"
+          mt={8}
+          onPress={handleLogout}
+          isLoading={isLoading}
+        />
+
       </VStack>
     </VStack>
   )

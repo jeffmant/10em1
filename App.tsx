@@ -2,10 +2,10 @@ import 'react-native-get-random-values'
 import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
 import { NativeBaseProvider, StatusBar } from "native-base";
 import { Routes } from '@routes/index';
-import AppLoading from 'expo-app-loading';
 import { AppProvider } from '@realm/react';
 import { REALM_APP_ID } from '@env'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Loading } from '@components/Loading';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -14,7 +14,7 @@ export default function App() {
   });
 
   if(!fontsLoaded) {
-    <AppLoading />
+    <Loading flex={1} />
   }
 
   return (

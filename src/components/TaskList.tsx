@@ -1,4 +1,4 @@
-import { FlatList, Spinner, VStack } from "native-base";
+import { Center, FlatList, Spinner, Text, VStack } from "native-base";
 import { TaskCard, TaskCardProps } from "./TaskCard";
 import { useRealm, useQuery } from "@libs/realm";
 import { useEffect, useState } from "react";
@@ -96,6 +96,16 @@ export function TaskList ({ selectedDate, userChallenge }: TaskListProps) {
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <TaskCard data={item} handleTask={handleTask} />
+          )}
+          ListEmptyComponent={(
+            <Center>
+              <Text
+                fontFamily="heading"
+                fontSize="xl"
+              >
+                Nenhuma tarefa
+              </Text>
+            </Center>
           )}
           showsVerticalScrollIndicator={false}
           _contentContainerStyle={{ paddingBottom: 32, paddingTop: 2 }}

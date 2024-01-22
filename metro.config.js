@@ -1,10 +1,4 @@
 const { getDefaultConfig } = require("expo/metro-config");
-const crypto = require('crypto');
-const fs = require('fs');
-
-let hash = crypto.createHash('sha256');
-hash.update(fs.readFileSync('.env'));
-const cacheVersion = hash.digest('hex');
 
 module.exports = (() => {
   const config = getDefaultConfig(__dirname);
@@ -20,8 +14,6 @@ module.exports = (() => {
     assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...resolver.sourceExts, "svg"]
   };
-
-  config.cacheVersion = cacheVersion
 
   return config;
 })();

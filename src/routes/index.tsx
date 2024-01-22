@@ -18,7 +18,7 @@ export function Routes () {
         <UserProvider fallback={AuthRoutes}>
           <RealmProvider 
             sync={syncConfig} 
-            fallback={Loading}
+            fallback={<Loading />}
           >
             <AppRoutes />
           </RealmProvider>

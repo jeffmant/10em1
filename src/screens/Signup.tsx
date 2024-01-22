@@ -43,7 +43,6 @@ export function Signup () {
       register({ email, password })
 
       if(result.success) {
-        console.log(result)
         logIn({ email, password })
       }
 
