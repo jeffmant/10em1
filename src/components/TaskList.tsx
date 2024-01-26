@@ -3,11 +3,12 @@ import { TaskCard, TaskCardProps } from "./TaskCard";
 import { useRealm, useQuery } from "@libs/realm";
 import { useEffect, useState } from "react";
 import { UserChallenge } from "@libs/realm/schemas/UserChallenge.schema";
-import { TaskLog } from "@libs/realm/schemas/TaskLog.schema";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Task } from "@libs/realm/schemas/Task.schema";
 import { sortTasks } from "@utils/sort-tasks.util";
+import { TaskLog } from "@libs/realm/schemas/TaskLog.schema";
+import { Log } from "@libs/realm/schemas/Log.schema";
 
 export type TaskListProps = {
   selectedDate: Date
@@ -17,76 +18,119 @@ export type TaskListProps = {
 export function TaskList ({ selectedDate, userChallenge }: TaskListProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [tasks, setTasks] = useState<TaskCardProps[]>([])
-  const [tasksLogs, setTasksLogs] = useState<TaskLog[]>([])
   
   const realm = useRealm()
 
   const taskCollection = useQuery(Task)
-  const taskLogCollection = useQuery(TaskLog)
 
   async function handleTask (taskId: string) {
     const foundTask = tasks.find(task => task.id === taskId)
 
     if (foundTask) {
       foundTask.checked = !foundTask.checked
+      
       const filteredTasks = tasks.filter(task => task.id !== taskId)
       
       setTasks(sortTasks([ ...filteredTasks, foundTask ], 'order'))
-    }
 
-    const taskIsAlreadyChecked = tasksLogs
-        .find((taskLog: TaskLog) => 
-          taskLog.taskId === foundTask?.id && 
-          taskLog.date === format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
-        )
+      const formattedSelectedDate = format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
 
-    if (taskIsAlreadyChecked) {
+      if(!userChallenge.tasksLogs || userChallenge.tasksLogs.length === 0) {
+        realm.write(() => {
+          const createdLog = realm.create(Log.name, Log.generate({
+            checked: foundTask.checked,
+            taskId: foundTask.id
+          }))
+
+          const createdTaskLog = realm.create(TaskLog.name, TaskLog.generate({
+            date: formattedSelectedDate,
+            logs: [createdLog as Log]
+          }))
+
+          realm.create(UserChallenge.name, UserChallenge.generate({
+            id: userChallenge._id,
+            userId: userChallenge.userId,
+            challengeId: userChallenge.challengeId,
+            tasksLogs: [createdTaskLog as TaskLog]
+          }), "modified" as any)
+
+        })
+      }
+
+      const selectedDateTasksLogs = userChallenge.tasksLogs?.find(taskLog => taskLog.date === formattedSelectedDate)
+
       realm.write(() => {
-        realm.delete(taskIsAlreadyChecked)
-      })
-    } else {
-      realm.write(() => {
-        realm.create(TaskLog.name, TaskLog.generate({
-          checked: true,
-          date: format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 }),
-          taskId: foundTask!.id,
-          userChallengeId: userChallenge._id
-        }))
+        const logIsAlreadyCreated = selectedDateTasksLogs?.logs?.find(log => log.taskId === foundTask.id)
+
+        const createdLog = realm.create(Log.name, Log.generate({
+          id: logIsAlreadyCreated?._id,
+          taskId: foundTask.id,
+          checked: foundTask.checked
+        }), 'modified' as any)
+
+        const createdTaskLog = realm.create(TaskLog.name, TaskLog.generate({
+          id: selectedDateTasksLogs?._id,
+          date: formattedSelectedDate,
+          logs: [
+            ...(selectedDateTasksLogs?.logs?.filter(log => log.taskId !== foundTask.id) || []) ,
+            createdLog as Log
+          ]
+        }), 'modified' as any)
+
+        realm.create(UserChallenge.name, UserChallenge.generate({
+          id: userChallenge._id,
+          challengeId: userChallenge.challengeId,
+          userId: userChallenge.userId,
+          tasksLogs: [
+            ...(userChallenge.tasksLogs?.filter(taskLog => taskLog.date !== formattedSelectedDate) || []),
+            createdTaskLog as TaskLog
+          ]
+        }), "modified" as any)
+
       })
     }
   }
 
-  async function fetchChallengeTasks(challengeId: string) {
-    const fomattedSelectedDate = format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
-    const foundTasksLogs = taskLogCollection.filtered('userChallengeId = $0 AND date = $1', userChallenge._id, fomattedSelectedDate) as unknown as TaskLog[]
-    setTasksLogs(foundTasksLogs)
-    
-    const challengeTasks = taskCollection.filtered('challengeId = $0', challengeId) as unknown as Task[]
+  async function fetchChallengeTasks(userChallenge: UserChallenge) {
+    try {
+      setIsLoading(true)
 
-    if (challengeTasks) {
-      const formattedTasks: TaskCardProps[] = challengeTasks.map((challengeTask: Task) => { 
-        const taskLog = foundTasksLogs.find(taskLog => taskLog.taskId === challengeTask._id)
+      const formattedSelectedDate = format(selectedDate, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })
 
-        return {
-          id: challengeTask._id,
-          title: challengeTask.title,
-          description: challengeTask.description,
-          icon: challengeTask.icon,
-          order: challengeTask.order,
-          checked: taskLog?.checked || false,
-          date: taskLog?.date
-        }
-      })
+      const foundTasksLogs = userChallenge.tasksLogs?.find(taskLog => taskLog.date === formattedSelectedDate)
 
-      setTasks(sortTasks(formattedTasks, 'order'))
+      const foundChallengeTasks = taskCollection.filtered('challengeId = $0', userChallenge.challengeId) as unknown as Task[]
+  
+      if (foundChallengeTasks) {
+        const formattedTasks: TaskCardProps[] = foundChallengeTasks.map((challengeTask: Task) => { 
+          const taskLog = foundTasksLogs?.logs.find(log => log.taskId === challengeTask._id)
+  
+          return {
+            id: challengeTask._id,
+            title: challengeTask.title,
+            description: challengeTask.description,
+            icon: challengeTask.icon,
+            order: challengeTask.order,
+            checked: taskLog?.checked || false,
+            date: foundTasksLogs?.date
+          }
+        })
+  
+        setTasks(sortTasks(formattedTasks, 'order'))
+      }
+      
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    if (userChallenge?.challengeId) {
-      fetchChallengeTasks(userChallenge?.challengeId)
+    if (userChallenge) {
+      fetchChallengeTasks(userChallenge)
     }
-  }, [userChallenge])
+  }, [userChallenge, selectedDate])
 
   return (
     isLoading ? <Spinner /> : (

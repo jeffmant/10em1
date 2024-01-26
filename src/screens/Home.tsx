@@ -1,5 +1,4 @@
-import { Box, HStack, Spinner, Text, VStack } from "native-base";
-import { HomeHeader } from "../components/HomeHeader";
+import { Box, HStack, Text, VStack } from "native-base";
 import { useEffect, useState } from "react";
 import { format, startOfYear, endOfYear } from 'date-fns';
 import { ptBR } from "date-fns/locale";
@@ -8,12 +7,13 @@ import { Platform, TouchableOpacity } from "react-native";
 import { useUser } from '@realm/react'
 import { useRealm, useQuery } from '@libs/realm'
 import { UserChallenge } from "@libs/realm/schemas/UserChallenge.schema";
-import { DEFAULT_CHALLENGE } from "../data/challenge-template";
 import { DailyList } from "@components/DailyList";
 import { TaskList } from "@components/TaskList";
 import { useNavigation } from "@react-navigation/native";
 import { AppRoutesNavigatiorProps } from "@routes/app.routes";
 import { BellRinging } from 'phosphor-react-native'
+import { Loading } from "@components/Loading";
+import { Challenge } from "@libs/realm/schemas/Challenge.schema";
 
 export function Home () {
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
@@ -21,10 +21,11 @@ export function Home () {
   const user = useUser()
   const realm = useRealm()
   const userChallengeCollection = useQuery(UserChallenge)
+  const challengeCollection = useQuery(Challenge)
 
   const [seletedUserChallenge, setSeletedUserChallenge] = useState<UserChallenge>()
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
@@ -56,16 +57,18 @@ export function Home () {
 
   async function assignUserToChallenge(): Promise<void> {
     realm.write(() => {
+      const challenges = challengeCollection.filtered('name = $0', '10em1')
+
       realm.create(UserChallenge.name, UserChallenge.generate({
         userId: user.id,
-        challengeId: DEFAULT_CHALLENGE
+        challengeId: challenges[0]._id,
+        tasksLogs: []
       }))
     })
   }
 
   async function selectUserChallenge () {
     try {
-      setIsLoading(true)
 
       let foundUserChallenges = await fetchUserChallenges()
 
@@ -73,25 +76,27 @@ export function Home () {
         await assignUserToChallenge()
         foundUserChallenges = await fetchUserChallenges()
       }
-
+      
       setSeletedUserChallenge(foundUserChallenges[0])
+      setIsLoading(false)
     } catch (error) {
       console.log(error)
-    } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    if (selectedDate) {
-      selectUserChallenge()
-    }
-  }, [selectedDate])
+    setTimeout(() => {
+      if (realm.syncSession?.isConnected()) {
+        selectUserChallenge()
+      }
+    }, 1000)
+  }, [realm.syncSession])
 
   return (
     <VStack flex={1}>
 
-      <HStack pt={16} pb={4} px={4} alignItems="center" justifyContent="space-around">
+      <HStack pt={16} pb={4} px={4} alignItems="center" justifyContent="space-between">
 
         <TouchableOpacity onPress={() => navigate('notification')}>
           {
@@ -121,7 +126,7 @@ export function Home () {
 
       <DailyList selectedDate={selectedDate} handleSelectDate={setSelectedDate} />
 
-      { isLoading ? <Spinner /> : <TaskList selectedDate={selectedDate} userChallenge={seletedUserChallenge!} /> }
+      { isLoading ? <Loading /> : <TaskList selectedDate={selectedDate} userChallenge={seletedUserChallenge!} /> }
 
     </VStack>
   )
