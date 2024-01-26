@@ -1,32 +1,27 @@
 import { Realm } from "@realm/react";
+import { Log } from "./Log.schema";
 
-type TaskLogProps = {
-  taskId: string
-  userChallengeId: string
+export type TaskLogsProps = {
+  id?: string
   date: string
-  checked: boolean
+  logs: Log[]
 }
 
 export class TaskLog extends Realm.Object<TaskLog> {
   _id!: string
-  checked!: boolean
-  taskId!: string
-  userChallengeId!: string
   date!: string
+  logs!: Log[]
   createdAt!: Date
   updatedAt!: Date
 
   static generate({
-    taskId,
-    userChallengeId,
+    id,
     date,
-    checked
-  }: TaskLogProps) {
+    logs = []
+  }: TaskLogsProps) {
     return {
-      _id: new Realm.BSON.UUID().toString(),
-      checked,
-      taskId,
-      userChallengeId,
+      _id: id ?? new Realm.BSON.UUID().toString(),
+      logs: logs,
       date,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -39,10 +34,8 @@ export class TaskLog extends Realm.Object<TaskLog> {
 
     properties: {
       _id: 'string',
-      checked: 'bool',
-      taskId: 'string',
-      userChallengeId: 'string',
       date: 'string',
+      logs: 'Log[]',
       createdAt: 'date',
       updatedAt: 'date',
     }

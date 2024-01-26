@@ -3,6 +3,7 @@ import { Challenge } from './schemas/Challenge.schema'
 import { Task } from './schemas/Task.schema';
 import { UserChallenge } from './schemas/UserChallenge.schema';
 import { TaskLog } from './schemas/TaskLog.schema';
+import { Log } from './schemas/Log.schema';
 
 const realmAccessBehavior: Realm.OpenRealmBehaviorConfiguration = {
   type: Realm.OpenRealmBehaviorType.OpenImmediately
@@ -18,6 +19,7 @@ export const syncConfig: any = {
       subs.add(realm.objects(Task));
       subs.add(realm.objects(UserChallenge));
       subs.add(realm.objects(TaskLog));
+      subs.add(realm.objects(Log));
     },
   },
 }
@@ -28,5 +30,5 @@ export const {
   useQuery,
   useObject
 } = createRealmContext({
-  schema: [ Challenge, Task, UserChallenge, TaskLog ]
+  schema: [ Challenge, Task, UserChallenge, TaskLog, Log ]
 })

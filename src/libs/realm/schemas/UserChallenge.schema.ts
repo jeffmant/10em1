@@ -1,25 +1,32 @@
 import { Realm } from "@realm/react";
+import { TaskLog } from "./TaskLog.schema";
 
-type UserChallengeProps = {
+export type UserChallengeProps = {
+  id?: string
   userId: string
   challengeId: string
+  tasksLogs: TaskLog[]
 }
 
 export class UserChallenge extends Realm.Object<UserChallenge> {
   _id!: string
   userId!: string
   challengeId!: string
+  tasksLogs!: TaskLog[]
   createdAt!: Date
   updatedAt!: Date
   
   static generate({
+    id,
     userId,
-    challengeId
+    challengeId,
+    tasksLogs
   }: UserChallengeProps) {
     return {
-      _id: new Realm.BSON.UUID().toString(),
+      _id: id ?? new Realm.BSON.UUID().toString(),
       userId,
       challengeId,
+      tasksLogs,
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -33,6 +40,7 @@ export class UserChallenge extends Realm.Object<UserChallenge> {
       _id: 'string',
       userId: 'string',
       challengeId: 'string',
+      tasksLogs: 'TaskLog[]',
       createdAt: 'date',
       updatedAt: 'date',
     }
