@@ -1,7 +1,7 @@
 import { Home } from '@screens/Home';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Notification } from '@screens/Notification';
-import { House, Gear, TrendUp } from 'phosphor-react-native';
+import { ChartDonut, Target, Gear } from 'phosphor-react-native';
 import { Activity } from '@screens/Activity';
 import { useTheme } from 'native-base';
 import { Platform } from 'react-native';
@@ -46,7 +46,7 @@ export function AppRoutes () {
         component={Home}
         options={{
           tabBarIcon: ({ color }) => (
-            <House color={color} size={iconSize} />
+            <Target color={color} size={iconSize} />
           ),
         }}
       />
@@ -56,8 +56,8 @@ export function AppRoutes () {
         component={Activity}
         options={{
           tabBarIcon: ({ color }) => (
-            <TrendUp color={color} size={iconSize} />
-          ),
+            <ChartDonut color={color} size={iconSize} />
+          )
         }}
       />
 
