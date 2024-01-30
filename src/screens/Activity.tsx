@@ -31,7 +31,7 @@ export function Activity () {
   const user = useUser()
   const userChallengesCollection = useQuery(UserChallenge)
   
-  const [selectedMenuOption, setSelectedMenuOption] = useState<MenuOptionEnum>(MenuOptionEnum.monthly)
+  const [selectedMenuOption, setSelectedMenuOption] = useState<MenuOptionEnum>(MenuOptionEnum.weekly)
 
   const [weeksOfMonth, setWeeksOfMonth] = useState<{key: string, value: number}[]>()
   const [daysOfWeek, setDaysOfWeek] = useState<{key: string, value: number}[]>()

@@ -31,7 +31,7 @@ export function Signup () {
     resolver: yupResolver(signupValidationSchema)
   })
 
-  const {register, result, logIn, } = useEmailPasswordAuth();
+  const {register, result, logIn } = useEmailPasswordAuth();
 
   const toast = useToast()
 
@@ -46,12 +46,16 @@ export function Signup () {
         logIn({ email, password })
       }
 
+      if (result.error) {
+        console.log(result.error)
+        throw new Error()
+      }
 
     } catch (error: any) {
       console.log(JSON.stringify(error))
 
       toast.show({
-        title: error.message || 'Algo deu errado. Tente novamente!',
+        title: 'Algo deu errado. Tente novamente!',
         placement: 'top',
         bgColor: 'red.500'
       })

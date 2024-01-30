@@ -30,7 +30,7 @@ export function Signin () {
     resolver: yupResolver(signinValidationSchema)
   })
 
-  const {logIn, result} = useEmailPasswordAuth();
+  const {logIn, result: { error }} = useEmailPasswordAuth();
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -40,10 +40,14 @@ export function Signin () {
       setIsLoading(true)
 
       logIn({ email, password })
+
+      if (error) {
+        throw new Error()
+      }
      
     } catch (error: any) {
       toast.show({
-        description: error.message || "Algo deu errado. Tente novamente!",
+        description: "Algo deu errado. Tente novamente!",
         placement: 'top',
         bgColor: 'red.500'
       })
