@@ -14,6 +14,7 @@ import { AppRoutesNavigatiorProps } from "@routes/app.routes";
 import { BellRinging } from 'phosphor-react-native'
 import { Loading } from "@components/Loading";
 import { Challenge } from "@libs/realm/schemas/Challenge.schema";
+import { useCurrentDate } from "@contexts/date.context";
 
 export function Home () {
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
@@ -27,7 +28,7 @@ export function Home () {
 
   const [isLoading, setIsLoading] = useState(true)
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const { state: { currentDate }, dispatch } = useCurrentDate()
 
   const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios' ? true : false)
 
@@ -36,10 +37,10 @@ export function Home () {
       setShowDatePicker(!showDatePicker)
 
       DateTimePickerAndroid.open({
-        value: selectedDate,
+        value: currentDate,
         onChange: (event, date) => handleSelectDate(event, date),
-        minimumDate: startOfYear(selectedDate),
-        maximumDate: endOfYear(selectedDate),
+        minimumDate: startOfYear(currentDate),
+        maximumDate: endOfYear(currentDate),
         negativeButton: { label: 'Cancelar' }
       })
     }
@@ -47,7 +48,7 @@ export function Home () {
 
   function handleSelectDate(_event: DateTimePickerEvent, date?: Date) {
     if (date) {
-      setSelectedDate(date)
+      dispatch({ type: 'update', updatedDate: date })
     }
   }
 
@@ -59,11 +60,14 @@ export function Home () {
     realm.write(() => {
       const challenges = challengeCollection.filtered('name = $0', '10em1')
 
-      realm.create(UserChallenge.name, UserChallenge.generate({
-        userId: user.id,
-        challengeId: challenges[0]._id,
-        tasksLogs: []
-      }))
+      if(challenges?.[0]) {
+        realm.create(UserChallenge.name, UserChallenge.generate({
+          userId: user.id,
+          challengeId: challenges[0]._id,
+          tasksLogs: []
+        }))
+      }
+
     })
   }
 
@@ -76,7 +80,7 @@ export function Home () {
         await assignUserToChallenge()
         foundUserChallenges = await fetchUserChallenges()
       }
-      
+
       setSeletedUserChallenge(foundUserChallenges[0])
       setIsLoading(false)
     } catch (error) {
@@ -102,17 +106,17 @@ export function Home () {
           {
             Platform.OS === 'ios' ? (
                 <DateTimePicker
-                  value={selectedDate} 
+                  value={currentDate} 
                   locale="pt-BR"
                   onChange={handleSelectDate}
-                  minimumDate={startOfYear(selectedDate)}
-                  maximumDate={endOfYear(selectedDate)}
+                  minimumDate={startOfYear(currentDate)}
+                  maximumDate={endOfYear(currentDate)}
                 /> 
             ) : 
             (
               <Box px={2} py={1} bgColor="gray.300" rounded="lg">
                 <Text fontFamily="body" fontWeight="normal" fontSize="lg" onPress={handleAndroidDatePicker}>
-                  {format(selectedDate, 'dd/MM/yyyy', { locale: ptBR })}
+                  {format(currentDate, 'dd/MM/yyyy', { locale: ptBR })}
                 </Text>
               </Box>
             )
@@ -124,9 +128,9 @@ export function Home () {
         </TouchableOpacity>
       </HStack>
 
-      <DailyList selectedDate={selectedDate} handleSelectDate={setSelectedDate} />
+      <DailyList selectedDate={currentDate} handleSelectDate={(date) => dispatch({ type: 'update', updatedDate: date })} />
 
-      { isLoading ? <Loading /> : <TaskList selectedDate={selectedDate} userChallenge={seletedUserChallenge!} /> }
+      { isLoading ? <Loading /> : <TaskList selectedDate={currentDate} userChallenge={seletedUserChallenge!} /> }
 
     </VStack>
   )

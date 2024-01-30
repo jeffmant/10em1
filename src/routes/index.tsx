@@ -5,6 +5,7 @@ import { AuthRoutes } from "./auth.routes";
 import { UserProvider } from '@realm/react'
 import { RealmProvider, syncConfig } from "../libs/realm";
 import { Loading } from "@components/Loading";
+import { CurrentDateProvider } from "@contexts/date.context";
 
 export function Routes () {
   const { colors } = useTheme()
@@ -20,7 +21,9 @@ export function Routes () {
             sync={syncConfig} 
             fallback={<Loading />}
           >
-            <AppRoutes />
+            <CurrentDateProvider>
+              <AppRoutes />
+            </CurrentDateProvider>
           </RealmProvider>
         </UserProvider>
       </NavigationContainer>
