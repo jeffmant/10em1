@@ -95,12 +95,12 @@ export function Activity () {
           }
         }
 
-        let checkedTasksLogs = 0 
-            
+        let checkedTasksLogs = 0
+
+        const dateInterval = eachDayOfInterval({ start: startDate, end: endDate }).map(date => format(date, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 }))
+        
         userChallenge.tasksLogs?.forEach((taskLog: TaskLog) => {
-          if(
-            new Date(taskLog.date) >= startDate && 
-            new Date(taskLog.date) <= endDate) {
+          if(dateInterval.includes(taskLog.date)) {
             checkedTasksLogs += taskLog.logs?.filter((log: Log) => log.checked).length
           }
         })
@@ -119,16 +119,15 @@ export function Activity () {
       })
       .map((date) => {
         let checkedTasksLogs = 0 
-            
+
+        
         userChallenge.tasksLogs?.forEach((taskLog: TaskLog) => {
-          if (new Date(taskLog.date) >= startOfDay(date) && 
-              new Date(taskLog.date) <= endOfDay(date)) {
+          if (taskLog.date === format(date, 'yyyy-MM-dd', { locale: ptBR, weekStartsOn: 1 })) {
             checkedTasksLogs += taskLog.logs?.filter((log: Log) => log.checked)?.length || 0
           }
         })
 
-
-        return { key: `${format(date, 'iii', { locale: ptBR, weekStartsOn: 1 }).slice(0, 3)}`, value: checkedTasksLogs || 0 }
+        return { key: `${format(date, 'iiii', { locale: ptBR, weekStartsOn: 1 }).slice(0, 3)}`, value: checkedTasksLogs || 0 }
       })
     )
   }
@@ -155,11 +154,12 @@ export function Activity () {
         }
       })
 
+    //TODO: hardcoded tasks quantity
     const weeklySuccessRate = +((100 * weeklyCheckedTasks) / (6 * 7)).toFixed()
     const monthlySuccessRate = +((100 * monthlyCheckedTasks) / (6 * 7 * 4)).toFixed()
 
-    const weeklyUnchecked = (7 * 7) - weeklyCheckedTasks
-    const monthlyUnchecked = (7 * 7 * 4) - monthlyCheckedTasks
+    const weeklyUnchecked = (6 * 7) - weeklyCheckedTasks
+    const monthlyUnchecked = (6 * 7 * 4) - monthlyCheckedTasks
 
     const weeklyPoints = weeklyCheckedTasks * 3
     const monthlyPoints = monthlyCheckedTasks * 3

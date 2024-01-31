@@ -6,12 +6,14 @@ import { Activity } from '@screens/Activity';
 import { useTheme } from 'native-base';
 import { Platform } from 'react-native';
 import { Settings } from '@screens/Settings';
+import { About } from '@screens/About';
 
 type AppRoutes = {
   home: undefined
   activity: undefined
   settings: undefined
   notification: undefined
+  about: undefined
 }
 
 export type AppRoutesNavigatiorProps = BottomTabNavigationProp<AppRoutes>
@@ -74,6 +76,14 @@ export function AppRoutes () {
       <Screen 
         name="notification"
         component={Notification}
+        options={{
+          tabBarButton: () => null
+        }}
+      />
+
+      <Screen 
+        name="about"
+        component={About}
         options={{
           tabBarButton: () => null
         }}
