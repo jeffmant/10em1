@@ -1,0 +1,23 @@
+{
+  "cli": {
+    "version": ">= 5.9.3"
+  },
+  "build": {
+    "preview": {
+      "android": {
+        // "distribution": "internal"
+        "buildType": "apk"
+      },
+      "env": {
+        "REALM_APP_ID":"application-0-fxxsw",
+        "ONE_SIGNAL_APP_ID": "fa2ba2a0-aba6-41d5-b2ba-9a99ff8c9ef5"
+      }
+    },
+    "production": {
+      "env": {
+        "REALM_APP_ID":"application-0-fxxsw",
+        "ONE_SIGNAL_APP_ID": "fa2ba2a0-aba6-41d5-b2ba-9a99ff8c9ef5"
+      }
+    }
+  }
+}

@@ -77,7 +77,7 @@ export function Activity () {
     setWeeksOfMonth(
       eachWeekOfInterval({ 
         start: startOfMonth(currentDate), 
-        end: endOfDay(currentDate) 
+        end: endOfMonth(currentDate)
       }, {
         locale: ptBR
       })
@@ -104,8 +104,7 @@ export function Activity () {
             checkedTasksLogs += taskLog.logs?.filter((log: Log) => log.checked).length
           }
         })
-
-
+        
         return {key: `${format(startDate, 'dd', { locale: ptBR })} - ${format(endDate, 'dd', { locale: ptBR })}`, value: checkedTasksLogs }
       })
     )
