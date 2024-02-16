@@ -1,4 +1,4 @@
-import { Center, Heading, Image, Link, ScrollView, StatusBar, Text, VStack, useToast } from "native-base";
+import { Center, Heading, Image, ScrollView, StatusBar, Text, VStack, useToast } from "native-base";
 import LogoImage from '@assets/logo.png'
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
@@ -6,9 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AuthRoutesNavigatiorProps } from "@routes/auth.routes";
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Controller, FieldError, useForm } from "react-hook-form";
-import { useState } from "react";
-import { FontAwesome } from '@expo/vector-icons'
+import { Controller, useForm } from "react-hook-form";
 import { useEmailPasswordAuth } from "@realm/react";
 
 type SigninDTO = {
@@ -26,19 +24,14 @@ export function Signin () {
 
   const toast = useToast()
 
-  const { control, handleSubmit, setError, formState: { errors, isValid } } = useForm<SigninDTO>({
-    resolver: yupResolver(signinValidationSchema)
+  const { control, handleSubmit, formState: { errors, isValid } } = useForm<SigninDTO>({
+    resolver: yupResolver(signinValidationSchema),
   })
 
-  const {logIn, result: { error }} = useEmailPasswordAuth();
-
-  const [isLoading, setIsLoading] = useState(false)
-
+  const { logIn, result: { error, pending: loginIsPending } } = useEmailPasswordAuth();
 
   async function handleSignin ({ email, password }: SigninDTO) { 
     try {
-      setIsLoading(true)
-
       logIn({ email, password })
 
       if (error) {
@@ -51,8 +44,6 @@ export function Signin () {
         placement: 'top',
         bgColor: 'red.500'
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -128,8 +119,8 @@ export function Signin () {
             <Button
               title="Entrar"
               onPress={handleSubmit(handleSignin)}
-              disabled={!isValid || isLoading}
-              isLoading={isLoading}
+              disabled={!isValid || loginIsPending}
+              isLoading={loginIsPending}
             />
 
           </Center>

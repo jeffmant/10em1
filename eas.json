@@ -5,8 +5,7 @@
   "build": {
     "preview": {
       "android": {
-        // "distribution": "internal"
-        "buildType": "apk"
+        "distribution": "internal"
       },
       "env": {
         "REALM_APP_ID":"application-0-fxxsw",

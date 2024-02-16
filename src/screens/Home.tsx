@@ -90,12 +90,10 @@ export function Home () {
   }
 
   useEffect(() => {
-    setTimeout(() => {
-      if (realm.syncSession?.isConnected()) {
-        selectUserChallenge()
-      }
-    }, 1000)
-  }, [realm.syncSession])
+    if (realm?.syncSession?.isConnected()) {
+      selectUserChallenge()
+    }
+  }, [realm?.syncSession?.isConnected()])
 
   return (
     <VStack flex={1}>

@@ -2,11 +2,11 @@ module.exports = {
   expo: {
     name: "10em1",
     slug: "10em1",
-    version: "5.0.0",
+    version: "1.0.0",
     scheme: "myapp",
     orientation: "portrait",
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
@@ -17,7 +17,8 @@ module.exports = {
     ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.clubdev.DezEmUm"
+      bundleIdentifier: "com.clubdev.DezEmUm",
+      buildNumber: "3"
     },
     android: {
       adaptiveIcon: {
@@ -25,7 +26,7 @@ module.exports = {
         backgroundColor: "#1B1B1F"
       },
       package: "com.clubdev.DezEmUm",
-      versionCode: 5
+      versionCode: 6
     },
     web: {
       favicon: "./assets/favicon.png"

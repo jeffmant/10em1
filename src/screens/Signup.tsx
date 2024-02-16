@@ -7,8 +7,8 @@ import { AuthRoutesNavigatiorProps } from "@routes/auth.routes";
 import { Controller, useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useState } from "react";
 import { useEmailPasswordAuth } from "@realm/react";
+import { useEffect } from "react";
 
 type SignupDTO = {
   email: string
@@ -23,46 +23,43 @@ const signupValidationSchema = Yup.object({
 })
 
 export function Signup () {
-  const [isLoading, setIsLoading] = useState(false)
   
   const { navigate } = useNavigation<AuthRoutesNavigatiorProps>()
 
-  const { control, handleSubmit, formState: { errors, isValid }, setError } = useForm<SignupDTO>({
+  const { control, handleSubmit, formState: { errors, isValid }, getValues } = useForm<SignupDTO>({
     resolver: yupResolver(signupValidationSchema)
   })
 
-  const {register, result, logIn } = useEmailPasswordAuth();
+  const { register, logIn, result: { pending: registerIsPending, error, success } } = useEmailPasswordAuth();
 
   const toast = useToast()
 
-
   async function handleSignup ({ email, password }: SignupDTO) {
     try {
-      setIsLoading(true)
-
       register({ email, password })
 
-      if(result.success) {
-        logIn({ email, password })
-      }
-
-      if (result.error) {
-        console.log(result.error)
+      if (error) {
+        console.log(JSON.stringify(error))
         throw new Error()
       }
 
     } catch (error: any) {
-      console.log(JSON.stringify(error))
-
       toast.show({
         title: 'Algo deu errado. Tente novamente!',
         placement: 'top',
         bgColor: 'red.500'
       })
-    } finally {
-      setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    if(success) {
+      const { email, password } = getValues()
+      if (email && password) {
+        logIn({ email, password })
+      }
+    }
+  }, [success])
 
   return (
     <>
@@ -143,8 +140,8 @@ export function Signup () {
             <Button 
               title="Criar conta"
               onPress={handleSubmit(handleSignup)}
-              disabled={!isValid || isLoading}
-              isLoading={isLoading}
+              disabled={!isValid || registerIsPending}
+              isLoading={registerIsPending}
             />
           </Center>
 
