@@ -2,21 +2,47 @@ import { Button } from "@components/Button";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@realm/react";
 import { AppRoutesNavigatiorProps } from "@routes/app.routes";
-import { Box, Divider, HStack, Heading, Text, VStack } from "native-base";
+import { Box, Center, Divider, HStack, Heading, Link, Text, VStack } from "native-base";
 import { Star, Info, ChatCircleDots, CaretRight, ShareFat } from 'phosphor-react-native'
 import { useState } from "react";
-import { Linking, TouchableOpacity } from "react-native";
+import { Alert, Linking, TouchableOpacity } from "react-native";
 
 export function Settings () {
   const [isLoading, setIsLoading] = useState(false)
   const { logOut } = useAuth()
+
   const { navigate } = useNavigation<AppRoutesNavigatiorProps>()
 
-
-  function handleLogout () {
+  async function handleLogout () {
     setIsLoading(true)
     logOut()
     setIsLoading(false)
+  }
+
+  async function handleDeleteAccount () {
+    try {
+      console.log('handleDeleteAccount')
+      Alert.alert(
+        'Tem certeza que deseja excluir a sua conta?', 
+        'Todos as suas atividades serão excluídas.', 
+        [
+          {
+            text: 'Cancelar',
+            onPress: () => console.log('Cancel'),
+            style: 'cancel'
+          },
+          {
+            text: 'Sim',
+            onPress: async () => {         
+              Linking.openURL('https://t.me/+MzgE4rzAgAE3YTMx')
+            } 
+          },
+        ]
+      )
+
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -92,12 +118,26 @@ export function Settings () {
 
         <Button 
           title="Sair do App" 
-          variant="outline"
+          variant="solid"
           fontSize="md"
           mt={8}
           onPress={handleLogout}
           isLoading={isLoading}
         />
+
+        <Center mt={8}>
+          <Link 
+            isUnderlined 
+            onPress={handleDeleteAccount}
+            _text={{
+              fontFamily: 'body',
+              fontSize: 'lg'
+            }}
+            isExternal={false}
+          >
+            Excluir minha conta
+          </Link>
+        </Center>
 
       </VStack>
     </VStack>
