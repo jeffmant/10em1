@@ -18,7 +18,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.clubdev.DezEmUm",
-      buildNumber: "3"
+      buildNumber: "4"
     },
     android: {
       adaptiveIcon: {
@@ -26,7 +26,7 @@ module.exports = {
         backgroundColor: "#1B1B1F"
       },
       package: "com.clubdev.DezEmUm",
-      versionCode: 6
+      versionCode: 7
     },
     web: {
       favicon: "./assets/favicon.png"
